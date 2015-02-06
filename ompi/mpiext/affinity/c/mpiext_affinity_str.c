@@ -115,6 +115,7 @@ static int get_rsrc_ompi_bound(char str[OMPI_AFFINITY_STRING_MAX])
         ret = OMPI_SUCCESS;
     }
     return ret;
+
 }
 
 

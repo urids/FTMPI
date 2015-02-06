@@ -249,8 +249,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT64;
-        /* to avoid alignment issues */
-        memcpy(&kv->data.uint64, data, 8);
+        kv->data.uint64 = *(uint64_t*)(data);
         break;
     case OPAL_UINT32:
         if (NULL == data) {
@@ -258,8 +257,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT32;
-        /* to avoid alignment issues */
-        memcpy(&kv->data.uint32, data, 4);
+        kv->data.uint32 = *(uint32_t*)data;
         break;
     case OPAL_UINT16:
         if (NULL == data) {
@@ -267,8 +265,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT16;
-        /* to avoid alignment issues */
-        memcpy(&kv->data.uint16, data, 2);
+        kv->data.uint16 = *(uint16_t*)(data);
         break;
     case OPAL_INT:
         if (NULL == data) {
@@ -276,8 +273,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_INT;
-        /* to avoid alignment issues */
-        memcpy(&kv->data.integer, data, sizeof(int));
+        kv->data.integer = *(int*)(data);
         break;
     case OPAL_UINT:
         if (NULL == data) {
@@ -285,8 +281,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_UINT;
-        /* to avoid alignment issues */
-        memcpy(&kv->data.uint, data, sizeof(unsigned int));
+        kv->data.uint = *(unsigned int*)(data);
         break;
     case OPAL_FLOAT:
         if (NULL == data) {
@@ -294,7 +289,7 @@ static int store(const opal_identifier_t *uid,
             return OPAL_ERR_BAD_PARAM;
         }
         kv->type = OPAL_FLOAT;
-        memcpy(&kv->data.fval, data, sizeof(float));
+        kv->data.fval = *(float*)(data);
         break;
     case OPAL_BYTE_OBJECT:
         kv->type = OPAL_BYTE_OBJECT;

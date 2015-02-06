@@ -729,7 +729,7 @@ mca_btl_tcp_proc_t* mca_btl_tcp_proc_lookup(const ompi_process_name_t *name)
  * loop through all available BTLs for one matching the source address
  * of the request.
  */
-void mca_btl_tcp_proc_accept(mca_btl_tcp_proc_t* btl_proc, struct sockaddr* addr, int sd)
+bool mca_btl_tcp_proc_accept(mca_btl_tcp_proc_t* btl_proc, struct sockaddr* addr, int sd)
 {
     size_t i;
     OPAL_THREAD_LOCK(&btl_proc->proc_lock);
@@ -761,13 +761,13 @@ void mca_btl_tcp_proc_accept(mca_btl_tcp_proc_t* btl_proc, struct sockaddr* addr
             ;
         }
 
-        (void)mca_btl_tcp_endpoint_accept(btl_endpoint, addr, sd);
-        OPAL_THREAD_UNLOCK(&btl_proc->proc_lock);
-        return;
+        if(mca_btl_tcp_endpoint_accept(btl_endpoint, addr, sd)) {
+            OPAL_THREAD_UNLOCK(&btl_proc->proc_lock);
+            return true;
+        }
     }
     OPAL_THREAD_UNLOCK(&btl_proc->proc_lock);
-    /* No further use of this socket. Close it */
-    CLOSE_THE_SOCKET(sd);
+    return false;
 }
 
 /*

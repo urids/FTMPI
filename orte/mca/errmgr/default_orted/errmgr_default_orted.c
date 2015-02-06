@@ -457,6 +457,10 @@ static void proc_errors(int fd, short args, void *cbdata)
             ORTE_ERROR_LOG(rc);
             return;
         }
+        /* remove the child from our local array as it is no longer alive */
+        opal_pointer_array_set_item(orte_local_children, i, NULL);
+        /* Decrement the number of local procs */
+        jdata->num_local_procs--;
 
         OPAL_OUTPUT_VERBOSE((5, orte_errmgr_base_framework.framework_output,
                              "%s errmgr:default_orted reporting proc %s aborted to HNP (local procs = %d)",
@@ -464,16 +468,14 @@ static void proc_errors(int fd, short args, void *cbdata)
                              ORTE_NAME_PRINT(&child->name),
                              jdata->num_local_procs));
         
+        /* release the child object */
+        OBJ_RELEASE(child);
+
         /* send it */
         if (0 > (rc = orte_rml.send_buffer_nb(ORTE_PROC_MY_HNP, alert,
                                               ORTE_RML_TAG_PLM,
                                               orte_rml_send_callback, NULL))) {
             ORTE_ERROR_LOG(rc);
-        }
-        /* if the proc still reports itself as alive, then we need
-         * to ensure the state machine sees it */
-        if (child->alive && child->waitpid_recvd) {
-            ORTE_ACTIVATE_PROC_STATE(&child->name, ORTE_PROC_STATE_WAITPID_FIRED);
         }
         return;
     }

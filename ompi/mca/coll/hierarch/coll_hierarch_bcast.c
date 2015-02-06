@@ -10,8 +10,6 @@
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2007-2008 University of Houston. All rights reserved.
- * Copyright (c) 2014      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -372,7 +370,7 @@ static int mca_coll_hierarch_bcast_intra_seg1 (void *buff,
 		}
 	    }
 	    else {
-		ret = ompi_request_wait( &rreq, MPI_STATUS_IGNORE);
+		ret = ompi_request_wait_all(1, &rreq, MPI_STATUS_IGNORE);
 		if ( OMPI_SUCCESS != ret ) {
 		    return ret;
 		}
@@ -530,7 +528,7 @@ static int mca_coll_hierarch_bcast_intra_seg2 (void *buff,
 		}
 	    }
 	    else {
-		ret = ompi_request_wait( &rreq, MPI_STATUS_IGNORE);
+		ret = ompi_request_wait_all ( 1, &rreq, MPI_STATUS_IGNORE);
 		if ( OMPI_SUCCESS != ret ) {
 		    return ret;
 		}
@@ -712,7 +710,7 @@ static int mca_coll_hierarch_bcast_intra_seg3 (void *buff,
 		}
 	    }
 	    else {
-		ret = ompi_request_wait( &rreq, MPI_STATUS_IGNORE );
+		ret = ompi_request_wait_all ( 1, &rreq, MPI_STATUS_IGNORE );
 		if ( OMPI_SUCCESS != ret ) {
 		    goto exit;
 		}
@@ -728,7 +726,7 @@ static int mca_coll_hierarch_bcast_intra_seg3 (void *buff,
 		}
 	    }
 	    else {
-		ret = ompi_request_wait( &rreq1, MPI_STATUS_IGNORE);
+		ret = ompi_request_wait_all( 1, &rreq1, MPI_STATUS_IGNORE);
 		if ( OMPI_SUCCESS != ret ) {
 		    goto exit;
 		}

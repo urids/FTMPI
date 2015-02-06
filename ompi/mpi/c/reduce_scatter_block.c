@@ -48,6 +48,8 @@ int MPI_Reduce_scatter_block(const void *sendbuf, void *recvbuf, int recvcount,
     int err;
 
     MEMCHECKER(
+        int rank;
+
         memchecker_comm(comm);
         memchecker_datatype(datatype);
 

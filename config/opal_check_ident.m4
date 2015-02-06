@@ -1,7 +1,6 @@
 dnl -*- shell-script -*-
 dnl
 dnl Copyright (c) 2007 Sun Microsystems, Inc.  All rights reserved.
-dnl Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
 dnl $COPYRIGHT$
 dnl
 dnl Additional copyrights may follow
@@ -69,8 +68,7 @@ AC_DEFUN([_OMPI_CHECK_IDENT], [
 
     ompi_ident="string_not_coincidentally_inserted_by_the_compiler"
     cat > conftest.$3 <<EOF
-#define IDENT_MSG "$ompi_ident"
-$4 IDENT_MSG $5
+$4 "$ompi_ident" $5
 int main(int argc, char** argv);
 int main(int argc, char** argv) { return 0; }
 EOF

@@ -12,8 +12,8 @@
  *                         All rights reserved.
  * Copyright (c) 2006-2007 Voltaire. All rights reserved.
  * Copyright (c) 2009      Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2010-2014 Los Alamos National Security, LLC. All rights
- *                         reserved.
+ * Copyright (c) 2010-2013 Los Alamos National Security, LLC.  
+ *                         All rights reserved. 
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -47,12 +47,6 @@ int mca_btl_vader_sendi (struct mca_btl_base_module_t *btl,
     void *data_ptr = NULL;
     size_t length;
 
-    /* don't attempt sendi if there are pending fragments on the endpoint */
-    if (OPAL_UNLIKELY(opal_list_get_size (&endpoint->pending_frags))) {
-        *descriptor = NULL;
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
-
     if (payload_size) {
         opal_convertor_get_current_pointer (convertor, &data_ptr);
     }
@@ -61,6 +55,7 @@ int mca_btl_vader_sendi (struct mca_btl_base_module_t *btl,
         mca_btl_vader_fbox_sendi (endpoint, tag, header, header_size, data_ptr, payload_size)) {
         return OMPI_SUCCESS;
     }
+
 
     length = header_size + payload_size;
 
@@ -78,7 +73,7 @@ int mca_btl_vader_sendi (struct mca_btl_base_module_t *btl,
     frag->hdr->tag = tag;
 
     /* write the match header (with MPI comm/tag/etc. info) */
-    memcpy (frag->segments[0].base.seg_addr.pval, header, header_size);
+    memcpy (frag->segments[0].seg_addr.pval, header, header_size);
 
     /* write the message data if there is any */
     /* we can't use single-copy semantics here since as caller will consider the send
@@ -88,7 +83,7 @@ int mca_btl_vader_sendi (struct mca_btl_base_module_t *btl,
         struct iovec iov;
 
         /* pack the data into the supplied buffer */
-        iov.iov_base = (IOVBASE_TYPE *)((uintptr_t)frag->segments[0].base.seg_addr.pval + header_size);
+        iov.iov_base = (IOVBASE_TYPE *)((uintptr_t)frag->segments[0].seg_addr.pval + header_size);
         iov.iov_len  = length = payload_size;
 
         (void) opal_convertor_pack (convertor, &iov, &iov_count, &length);
@@ -97,10 +92,7 @@ int mca_btl_vader_sendi (struct mca_btl_base_module_t *btl,
     }
 
     /* write the fragment pointer to peer's the FIFO. the progress function will return the fragment */
-    if (!vader_fifo_write_ep (frag->hdr, endpoint)) {
-        *descriptor = &frag->base;
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
+    vader_fifo_write_ep (frag->hdr, endpoint);
 
     return OMPI_SUCCESS;
 }

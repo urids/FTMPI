@@ -19,9 +19,8 @@
  * Copyright (c) 2009      IBM Corporation.  All rights reserved.
  * Copyright (c) 2013      Intel, Inc. All rights reserved
  * Copyright (c) 2013      NVIDIA Corporation.  All rights reserved.
- * Copyright (c) 2014-2015 Research Organization for Information Science
+ * Copyright (c) 2014      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
- * Copyright (c) 2014      Bull SAS.  All rights reserved
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -339,26 +338,10 @@ static int create_srq(mca_btl_openib_module_t *openib_btl)
             openib_btl->qps[qp].u.srq_qp.rd_posted = 0;
 #if HAVE_XRC
             if(BTL_OPENIB_QP_TYPE_XRC(qp)) {
-#if OMPI_HAVE_CONNECTX_XRC_DOMAINS
-                struct ibv_srq_init_attr_ex attr_ex;
-                memset(&attr_ex, 0, sizeof(struct ibv_srq_init_attr_ex));
-                attr_ex.attr.max_wr = attr.attr.max_wr;
-                attr_ex.attr.max_sge = attr.attr.max_sge;
-                attr_ex.comp_mask = IBV_SRQ_INIT_ATTR_TYPE | IBV_SRQ_INIT_ATTR_XRCD |
-                                    IBV_SRQ_INIT_ATTR_CQ | IBV_SRQ_INIT_ATTR_PD;
-                attr_ex.srq_type = IBV_SRQT_XRC;
-                attr_ex.xrcd = openib_btl->device->xrcd;
-                attr_ex.cq = openib_btl->device->ib_cq[qp_cq_prio(qp)];
-                attr_ex.pd = openib_btl->device->ib_pd;
-
-                openib_btl->qps[qp].u.srq_qp.srq =
-                ibv_create_srq_ex(openib_btl->device->ib_dev_context, &attr_ex);
-#else
                 openib_btl->qps[qp].u.srq_qp.srq =
                     ibv_create_xrc_srq(openib_btl->device->ib_pd,
                             openib_btl->device->xrc_domain,
                             openib_btl->device->ib_cq[qp_cq_prio(qp)], &attr);
-#endif
             } else
 #endif
             {
@@ -611,6 +594,110 @@ static int mca_btl_openib_tune_endpoint(mca_btl_openib_module_t* openib_btl,
     }
 
     return OMPI_SUCCESS;
+}
+
+/* read a single integer from a linux module parameters file */
+static uint64_t read_module_param(char *file, uint64_t value)
+{
+    int fd = open(file, O_RDONLY);
+    char buffer[64];
+    uint64_t ret;
+
+    if (0 > fd) {
+        return value;
+    }
+
+    read (fd, buffer, 64);
+
+    close (fd);
+
+    errno = 0;
+    ret = strtoull(buffer, NULL, 10);
+
+    return (0 == errno) ? ret : value;
+}
+
+/* calculate memory registation limits */
+static uint64_t calculate_total_mem (void)
+{
+#if OPAL_HAVE_HWLOC
+    hwloc_obj_t machine;
+
+    machine = hwloc_get_next_obj_by_type (opal_hwloc_topology, HWLOC_OBJ_MACHINE, NULL);
+    if (NULL == machine) {
+        return 0;
+    }
+    
+    return machine->memory.total_memory;
+#else
+    return 0;
+#endif
+}
+
+
+static uint64_t calculate_max_reg (void) 
+{
+    struct stat statinfo;
+    uint64_t mtts_per_seg = 1;
+    uint64_t num_mtt = 1 << 19;
+    uint64_t reserved_mtt = 0;
+    uint64_t max_reg, mem_total;
+
+    mem_total = calculate_total_mem ();
+
+    if (0 == stat("/sys/module/mlx4_core/parameters/log_num_mtt", &statinfo)) {
+        mtts_per_seg = 1 << read_module_param("/sys/module/mlx4_core/parameters/log_mtts_per_seg", 1);
+        num_mtt = 1 << read_module_param("/sys/module/mlx4_core/parameters/log_num_mtt", 20);
+        if (1 == num_mtt) {
+            /* NTH: is 19 a minimum? when log_num_mtt is set to 0 use 19 */
+            num_mtt = 1 << 20;
+        }
+
+        max_reg = (num_mtt - reserved_mtt) * opal_getpagesize () * mtts_per_seg;
+
+    } else if (0 == stat("/sys/module/ib_mthca/parameters/num_mtt", &statinfo)) {
+        mtts_per_seg = 1 << read_module_param("/sys/module/ib_mthca/parameters/log_mtts_per_seg", 1);
+        num_mtt = read_module_param("/sys/module/ib_mthca/parameters/num_mtt", 1 << 20);
+        reserved_mtt = read_module_param("/sys/module/ib_mthca/parameters/fmr_reserved_mtts", 0);
+
+        max_reg = (num_mtt - reserved_mtt) * opal_getpagesize () * mtts_per_seg;
+
+    } else if (
+            (0 == stat("/sys/module/mlx5_core", &statinfo)) ||
+            (0 == stat("/sys/module/mlx4_core/parameters", &statinfo)) ||
+            (0 == stat("/sys/module/ib_mthca/parameters", &statinfo))
+            ) {
+        /* mlx5 means that we have ofed 2.0 and it can always register 2xmem_total for any mlx hca */
+        max_reg = 2 * mem_total;
+
+    } else {
+        /* Need to update to determine the registration limit for this
+           configuration */
+        max_reg = mem_total;
+    }
+
+    /* Print a warning if we can't register more than 75% of physical
+       memory.  Abort if the abort_not_enough_reg_mem MCA param was
+       set. */
+    if (max_reg < mem_total * 3 / 4) {
+        char *action;
+
+        if (mca_btl_openib_component.abort_not_enough_reg_mem) {
+            action = "Your MPI job will now abort.";
+        } else {
+            action = "Your MPI job will continue, but may be behave poorly and/or hang.";
+        }
+        opal_show_help("help-mpi-btl-openib.txt", "reg mem limit low", true,
+                       ompi_process_info.nodename, (unsigned long)(max_reg >> 20),
+                       (unsigned long)(mem_total >> 20), action);
+        if (mca_btl_openib_component.abort_not_enough_reg_mem) {
+            ompi_rte_abort(1, NULL);
+        }
+    }
+
+    /* Limit us to 87.5% of the registered memory (some fluff for QPs,
+       file systems, etc) */
+    return (max_reg * 7) >> 3;
 }
 
 static int prepare_device_for_use (mca_btl_openib_device_t *device)
@@ -1052,7 +1139,7 @@ int mca_btl_openib_add_procs(
     }
 
     openib_btl->local_procs += local_procs;
-    openib_btl->device->mem_reg_max /= openib_btl->local_procs;
+    openib_btl->device->mem_reg_max = calculate_max_reg () / openib_btl->local_procs;
 
     return mca_btl_openib_size_queues(openib_btl, nprocs);
 }
@@ -1742,13 +1829,6 @@ int mca_btl_openib_sendi( struct mca_btl_base_module_t* btl,
         goto cant_send;
     }
 
-#if OPAL_CUDA_GDR_SUPPORT
-    /* We do not want to use this path when we have GDR support */
-    if (convertor->flags & CONVERTOR_CUDA) {
-        goto cant_send;
-    }
-#endif /* OPAL_CUDA_GDR_SUPPORT */
-
     /* Allocate WQE */
     if(OPAL_UNLIKELY(qp_get_wqe(ep, qp) < 0)) {
         goto no_credits_or_wqe;
@@ -1980,20 +2060,14 @@ int mca_btl_openib_put( mca_btl_base_module_t* btl,
     to_com_frag(frag)->endpoint = ep;
 #if HAVE_XRC
     if (MCA_BTL_XRC_ENABLED && BTL_OPENIB_QP_TYPE_XRC(qp))
-#if OMPI_HAVE_CONNECTX_XRC_DOMAINS
-        frag->sr_desc.qp_type.xrc.remote_srqn=ep->rem_info.rem_srqs[qp].rem_srq_num;
-#else
         frag->sr_desc.xrc_remote_srq_num=ep->rem_info.rem_srqs[qp].rem_srq_num;
-#endif
 #endif
 
     descriptor->order = qp;
     /* Setting opcode on a frag constructor isn't enough since prepare_src
      * may return send_frag instead of put_frag */
     frag->sr_desc.opcode = IBV_WR_RDMA_WRITE;
-    frag->sr_desc.send_flags = ib_send_flags(descriptor->des_src->seg_len, &(ep->qps[qp]), 1);
-    qp_inflight_wqe_to_frag(ep, qp, to_com_frag(frag));
-    qp_reset_signal_count(ep, qp);
+    frag->sr_desc.send_flags = ib_send_flags(src_seg->base.seg_len, &(ep->qps[qp]), 1);
     
     qp_inflight_wqe_to_frag(ep, qp, to_com_frag(frag));
     qp_reset_signal_count(ep, qp);
@@ -2073,11 +2147,7 @@ int mca_btl_openib_get(mca_btl_base_module_t* btl,
 
 #if HAVE_XRC
     if (MCA_BTL_XRC_ENABLED && BTL_OPENIB_QP_TYPE_XRC(qp))
-#if OMPI_HAVE_CONNECTX_XRC_DOMAINS
-        frag->sr_desc.qp_type.xrc.remote_srqn=ep->rem_info.rem_srqs[qp].rem_srq_num;
-#else
         frag->sr_desc.xrc_remote_srq_num=ep->rem_info.rem_srqs[qp].rem_srq_num;
-#endif
 #endif
     descriptor->order = qp;
 

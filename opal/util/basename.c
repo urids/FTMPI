@@ -12,7 +12,6 @@
  * Copyright (c) 2009-2014 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2014      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
- * Copyright (c) 2014      Intel, Inc. All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -101,17 +100,15 @@ char *opal_basename(const char *filename)
 
 char* opal_dirname(const char* filename)
 {
-#if defined(HAVE_DIRNAME) || OPAL_HAVE_DIRNAME
+#if defined(HAVE_DIRNAME)
     char* safe_tmp = strdup(filename), *result;
     result = strdup(dirname(safe_tmp));
     free(safe_tmp);
     return result;
 #else
     const char* p = opal_find_last_path_separator(filename, strlen(filename));
-    /* NOTE: p will be NULL if no path separator was in the filename - i.e.,
-     * if filename is just a local file */
 
-    for( ; NULL != p && p != filename; p-- ) {
+    for( ; p != filename; p-- ) {
         if( (*p == '\\') || (*p == '/') ) {
             /* If there are several delimiters remove them all */
             for( --p; p != filename; p-- ) {
@@ -134,5 +131,5 @@ char* opal_dirname(const char* filename)
         }
     }
     return strdup(".");
-#endif  /* defined(HAVE_DIRNAME) || OPAL_HAVE_DIRNAME */
+#endif  /* defined(HAVE_DIRNAME) */
 }

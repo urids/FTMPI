@@ -35,4 +35,4 @@ libmpiext_example_c_la_SOURCES = \
         $(ompi_HEADERS) \
         mpiext_example_module.c \
         mpiext_example_progress.c
-libmpiext_example_c_la_LDFLAGS = -module -avoid-version
+libmpiext_example_c_la_LDFLAGS = -module -avoid-version -ldl

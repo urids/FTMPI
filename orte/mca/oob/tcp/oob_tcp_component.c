@@ -16,8 +16,6 @@
  * Copyright (c) 2011      Oak Ridge National Labs.  All rights reserved.
  * Copyright (c) 2013-2014 Intel, Inc.  All rights reserved.
  * Copyright (c) 2014      NVIDIA Corporation.  All rights reserved.
- * Copyright (c) 2014      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -192,21 +190,14 @@ static int tcp_component_close(void)
 }
 #if ORTE_ENABLE_STATIC_PORTS
 static char *static_port_string;
-#if OPAL_ENABLE_IPV6
-static char *static_port_string6;
 #endif
-#endif
-
 static char *dyn_port_string;
-#if OPAL_ENABLE_IPV6
-static char *dyn_port_string6;
-#endif
 
 static int tcp_component_register(void)
 {
     mca_base_component_t *component = &mca_oob_tcp_component.super.oob_base;
     int var_id;
-    
+
     /* register oob module parameters */
     mca_oob_tcp_component.peer_limit = -1;
     (void)mca_base_component_var_register(component, "peer_limit",
@@ -292,17 +283,17 @@ static int tcp_component_register(void)
     }
 
 #if OPAL_ENABLE_IPV6
-    static_port_string6 = NULL;
+    static_port_string = NULL;
     (void)mca_base_component_var_register(component, "static_ipv6_ports", 
                                           "Static ports for daemons and procs (IPv6)",
                                           MCA_BASE_VAR_TYPE_STRING, NULL, 0, 0,
                                           OPAL_INFO_LVL_9,
                                           MCA_BASE_VAR_SCOPE_READONLY,
-                                          &static_port_string6);
+                                          &static_port_string);
 
     /* if ports were provided, parse the provided range */
-    if (NULL != static_port_string6) {
-        orte_util_parse_range_options(static_port_string6, &mca_oob_tcp_component.tcp6_static_ports);
+    if (NULL != static_port_string) {
+        orte_util_parse_range_options(static_port_string, &mca_oob_tcp_component.tcp6_static_ports);
         if (0 == strcmp(mca_oob_tcp_component.tcp6_static_ports[0], "-1")) {
             opal_argv_free(mca_oob_tcp_component.tcp6_static_ports);
             mca_oob_tcp_component.tcp6_static_ports = NULL;
@@ -346,15 +337,15 @@ static int tcp_component_register(void)
     }
 
 #if OPAL_ENABLE_IPV6
-    dyn_port_string6 = NULL;
+    dyn_port_string = NULL;
     (void)mca_base_component_var_register(component, "dynamic_ipv6_ports",
                                           "Range of ports to be dynamically used by daemons and procs (IPv6)",
                                           MCA_BASE_VAR_TYPE_STRING, NULL, 0, 0,
                                           OPAL_INFO_LVL_9,
                                           MCA_BASE_VAR_SCOPE_READONLY,
-                                          &dyn_port_string6);
+                                          &dyn_port_string);
     /* if ports were provided, parse the provided range */
-    if (NULL != dyn_port_string6) {
+    if (NULL != dyn_port_string) {
         /* can't have both static and dynamic ports! */
         if (orte_static_ports) {
             char *err4=NULL, *err6=NULL;
@@ -367,7 +358,7 @@ static int tcp_component_register(void)
             opal_show_help("help-oob-tcp.txt", "static-and-dynamic-ipv6", true,
                            (NULL == err4) ? "N/A" : err4,
                            (NULL == err6) ? "N/A" : err6,
-                           dyn_port_string6);
+                           dyn_port_string);
             if (NULL != err4) {
                 free(err4);
             }
@@ -376,7 +367,7 @@ static int tcp_component_register(void)
             }
             return ORTE_ERROR;
         }
-        orte_util_parse_range_options(dyn_port_string6, &mca_oob_tcp_component.tcp6_dyn_ports);
+        orte_util_parse_range_options(dyn_port_string, &mca_oob_tcp_component.tcp6_dyn_ports);
         if (0 == strcmp(mca_oob_tcp_component.tcp6_dyn_ports[0], "-1")) {
             opal_argv_free(mca_oob_tcp_component.tcp6_dyn_ports);
             mca_oob_tcp_component.tcp6_dyn_ports = NULL;
@@ -418,8 +409,7 @@ static bool component_available(void)
     char name[32];
     struct sockaddr_storage my_ss;
     int kindex;
-    bool loopback = false;
-    
+
     opal_output_verbose(5, orte_oob_base_framework.framework_output,
                         "oob:tcp: component_available called");
 
@@ -442,11 +432,6 @@ static bool component_available(void)
 
     /* look at all available interfaces */ 
     for (i = opal_ifbegin(); i >= 0; i = opal_ifnext(i)) {
-        /* if this interface has loopback support, record that fact */
-        if (opal_ifisloopback(i)) {
-            loopback = true;
-        }
-        
         if (OPAL_SUCCESS != opal_ifindextoaddr(i, (struct sockaddr*) &my_ss,
                                                sizeof (my_ss))) {
             opal_output (0, "oob_tcp: problems getting address for index %i (kernel index %i)\n",
@@ -514,6 +499,7 @@ static bool component_available(void)
                 continue;
             }
         }
+
         /* Refs ticket #3019
          * it would probably be worthwhile to print out a warning if OMPI detects multiple
          * IP interfaces that are "up" on the same subnet (because that's a Bad Idea). Note
@@ -547,15 +533,7 @@ static bool component_available(void)
         }
     }
 
-    if (ORTE_PROC_IS_DAEMON && !loopback) {
-        /* Solaris doesn't care, but warn if we are
-         * on any other type of system */
-#if !OPAL_HAVE_SOLARIS
-        orte_show_help("help-oob-tcp.txt", "no-loopback-found", true);
-#endif
-    }
-
-/* cleanup */
+    /* cleanup */
     if (NULL != interfaces) {
         opal_argv_free(interfaces);
     }
@@ -750,7 +728,6 @@ static int component_set_addr(orte_process_name_t *peer,
             opal_output_verbose(OOB_TCP_DEBUG_CONNECT, orte_oob_base_framework.framework_output,
                                 "FORMAT ERROR IN ADDR: %s",
                                 (NULL == host) ? "NULL" : "ZERO LENGTH");
-            free(tcpuri);
             return ORTE_ERR_BAD_PARAM;
         }
 
@@ -808,8 +785,6 @@ static int component_set_addr(orte_process_name_t *peer,
             mca_oob_tcp_module.api.set_peer(peer, af_family, host, ports);
             found = true;
         }
-        opal_argv_free(addrs);
-        free(tcpuri);
     }
     if (found) {
         /* indicate that this peer is addressable by this component */
@@ -1116,8 +1091,7 @@ static char **split_and_resolve(char **orig_str, char *name)
                             argv_prefix);
             
         /* Go through all interfaces and see if we can find a match */
-        for (if_index = opal_ifbegin(); if_index >= 0;
-             if_index = opal_ifnext(if_index)) {
+        for (if_index = 0; if_index < opal_ifcount(); if_index++) {
             opal_ifindextoaddr(if_index, 
                                (struct sockaddr*) &if_inaddr,
                                sizeof(if_inaddr));
@@ -1129,7 +1103,7 @@ static char **split_and_resolve(char **orig_str, char *name)
         }
         
         /* If we didn't find a match, keep trying */
-        if (if_index < 0) {
+        if (if_index == opal_ifcount()) {
             orte_show_help("help-oob-tcp.txt", "invalid if_inexclude",
                            true, name, orte_process_info.nodename, tmp,
                            "Did not find interface matching this subnet");

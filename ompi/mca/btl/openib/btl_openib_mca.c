@@ -16,8 +16,6 @@
  * Copyright (c) 2006-2007 Voltaire All rights reserved.
  * Copyright (c) 2009-2010 Oracle and/or its affiliates.  All rights reserved.
  * Copyright (c) 2013-2014 NVIDIA Corporation.  All rights reserved.
- * Copyright (c) 2014      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -221,7 +219,7 @@ static int reg_bool(const char* param_name,
 int btl_openib_register_mca_params(void)
 {
     mca_base_var_enum_t *new_enum;
-    char *default_qps;
+    char default_qps[100];
     uint32_t mid_qp_size;
     char *msg, *str;
     int ret, tmp;
@@ -269,7 +267,7 @@ int btl_openib_register_mca_params(void)
     CHECK(reg_int("want_fork_support", NULL,
                   "Whether fork support is desired or not "
                   "(negative = try to enable fork support, but continue even if it is not available, 0 = do not enable fork support, positive = try to enable fork support and fail if it is not available)",
-                  0, &mca_btl_openib_component.want_fork_support, 0));
+                  OMPI_HAVE_IBV_FORK_INIT ? -1 : 0, &mca_btl_openib_component.want_fork_support, 0));
 
     asprintf(&str, "%s/mca-btl-openib-device-params.ini",
              opal_install_dirs.ompidatadir);
@@ -455,7 +453,7 @@ int btl_openib_register_mca_params(void)
 
     CHECK(reg_uint("max_lmc", NULL, "Maximum number of LIDs to use for each device port "
                    "(must be >= 0, where 0 = use all available)",
-                   1, &mca_btl_openib_component.max_lmc, 0));
+                   0, &mca_btl_openib_component.max_lmc, 0));
 
 #if OPAL_HAVE_THREADS
     CHECK(reg_int("enable_apm_over_lmc", NULL, "Maximum number of alternative paths for each device port "
@@ -513,14 +511,10 @@ int btl_openib_register_mca_params(void)
                    "Preferred communication buffer alignment, in bytes "
                    "(must be > 0 and power of two)",
                    64, &mca_btl_openib_component.buffer_alignment, 0));
-    /* RHC: MESSAGE COALESCING IS BEING TURNED OFF IN 1.8 UNTIL FINAL
-     * FIX IS AVAILABLE */
-#if 0
+
     CHECK(reg_bool("use_message_coalescing", NULL,
                    "If nonzero, use message coalescing", true,
                    &mca_btl_openib_component.use_message_coalescing));
-#endif
-    mca_btl_openib_component.use_message_coalescing = false;
 
     CHECK(reg_uint("cq_poll_ratio", NULL,
                    "How often to poll high priority CQ versus low priority CQ",
@@ -536,10 +530,6 @@ int btl_openib_register_mca_params(void)
     CHECK(reg_uint("max_hw_msg_size", NULL,
                    "Maximum size (in bytes) of a single fragment of a long message when using the RDMA protocols (must be > 0 and <= hw capabilities).",
                    0, &mca_btl_openib_component.max_hw_msg_size, 0));
-
-    CHECK(reg_bool("allow_max_memory_registration", NULL,
-                  "Allow maximum possible memory to register with HCA",
-                   1, &mca_btl_openib_component.allow_max_memory_registration));
 
     /* Help debug memory registration issues */
     CHECK(reg_int("memory_registration_verbose", NULL,
@@ -662,15 +652,11 @@ int btl_openib_register_mca_params(void)
         mid_qp_size = 1024;
     }
 
-    asprintf(&default_qps,
+    snprintf(default_qps, 100,
             "P,128,256,192,128:S,%u,1024,1008,64:S,%u,1024,1008,64:S,%u,1024,1008,64",
             mid_qp_size,
             (uint32_t)mca_btl_openib_module.super.btl_eager_limit,
             (uint32_t)mca_btl_openib_module.super.btl_max_send_size);
-    if (NULL == default_qps) {
-        /* Don't try to recover from this */
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
 
     mca_btl_openib_component.default_recv_qps = default_qps;
     CHECK(reg_string("receive_queues", NULL,
@@ -742,7 +728,7 @@ int btl_openib_verify_mca_params (void)
     }
 
 #if !HAVE_IBV_FORK_INIT
-    if (1 == mca_btl_openib_component.want_fork_support) {
+    if (0 != mca_btl_openib_component.want_fork_support) {
         opal_show_help("help-mpi-btl-openib.txt",
                        "ibv_fork requested but not supported", true,
                        ompi_process_info.nodename);

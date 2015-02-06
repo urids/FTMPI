@@ -11,37 +11,45 @@
 # number string.
 
 # major, minor, and release are generally combined in the form
-# <major>.<minor>.<release>.
+# <major>.<minor>.<release>.  If release is zero, then it is omitted.
 
 major=1
 minor=8
-release=5
+release=2
 
-# greek is generally used for alpha or beta release tags.  If it is
-# non-empty, it will be appended to the version number.  It does not
-# have to be numeric.  Common examples include: a1 (alpha release 1),
-# b1 (beta release 1), rc2 (release candidate 2).  The only
-# requirement is that it must be entirely printable ASCII characters
-# and have no white space.
+# greek is used for alpha or beta release tags.  If it is non-empty,
+# it will be appended to the version number.  It does not have to be
+# numeric.  Common examples include a1 (alpha release 1),
+# b1 (beta release 1), sc2005 (Super Computing 2005 release).  The
+# only requirement is that it must be entirely printable ASCII 
+# characters and have no white space.
 
-greek=a1
+greek=rc6
 
-# If repo_rev is empty, then the repository version number will be
-# obtained during "make dist" via the "git describe --tags --always"
-# command, or with the date (if "git describe" fails) in the form of
-# "date<date>".
+# If want_repo_rev=1, then the repo revision number will be included
+# in the overall Open MPI version number in some form.
 
-repo_rev=
+want_repo_rev=1
 
-# If tarball_version is not empty, it is used as the version string in
-# the tarball filename, regardless of all other versions listed in
-# this file.  For example, if tarball_version is empty, the tarball
-# filename will be of the form
-# openmpi-<major>.<minor>.<release><greek>.tar.*.  However, if
-# tarball_version is not empty, the tarball filename will be of the
-# form openmpi-<tarball_version>.tar.*.
+# If repo_rev=-1, then the repository version number will be obtained
+# dynamically at run time, either: 
+#
+# 1) via the "svnversion" command (if this is a Subversion checkout)
+#    in the form "r<svn_r>", or 
+# 2) via the "hg -v -R tip" command (if this is a Mercurial clone)
+#    in the form of "hg<hash>", using the hash tag at the tip
+# 3) via the "git log -1" command (if this is a Git clone) in the form
+#    of "git<hash>", using the hash tag at the HEAD
+# 4) with the date (if none of the above work) in the form of
+#    "date<date>".
+#
+# Alternatively, if repo_rev is not -1, the value of repo_rev_r will
+# be directly appended to the version string.  This happens during
+# "make dist", for example: if the distribution tarball is being made
+# from an SVN checkout, if repo_rev=-1, then its value is replaced
+# with the output of "svnversion".
 
-tarball_version=gitclone
+repo_rev=-1
 
 # The date when this release was created
 
@@ -82,16 +90,15 @@ date="Unreleased developer copy"
 # Version numbers are described in the Libtool current:revision:age
 # format.
 
-libmpi_so_version=7:0:6
+libmpi_so_version=6:2:5
 libmpi_cxx_so_version=2:3:1
-libmpi_mpifh_so_version=7:0:5
-libmpi_usempi_tkr_so_version=5:0:4
-libmpi_usempi_ignore_tkr_so_version=1:0:1
-libmpi_usempif08_so_version=6:0:6
-libopen_rte_so_version=7:5:0
-libopen_pal_so_version=8:1:2
+libmpi_mpifh_so_version=6:0:4
+libmpi_usempi_tkr_so_version=4:2:3
+libmpi_usempif08_so_version=5:0:5
+libopen_rte_so_version=7:4:0
+libopen_pal_so_version=8:0:2
 libmpi_java_so_version=3:0:2
-liboshmem_so_version=3:1:0
+liboshmem_so_version=3:0:0
 
 # "Common" components install standalone libraries that are run-time
 # linked by one or more components.  So they need to be versioned as
@@ -99,11 +106,11 @@ liboshmem_so_version=3:1:0
 # components-don't-affect-the-build-system abstraction.
 
 # OMPI layer
-libmca_common_cuda_so_version=1:7:0
+libmca_common_cuda_so_version=1:6:0
 libmca_common_mx_so_version=2:5:0
 libmca_common_sm_so_version=4:4:0
 libmca_common_ugni_so_version=2:1:2
 libmca_common_verbs_so_version=2:3:2
 
 # OPAL layer
-libmca_opal_common_pmi_so_version=2:3:1
+libmca_opal_common_pmi_so_version=2:2:1

@@ -1,4 +1,3 @@
-/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2008 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -12,7 +11,7 @@
  *                         All rights reserved.
  * Copyright (c) 2007-2011 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2008      Sun Microsystems, Inc.  All rights reserved.
- * Copyright (c) 2010-2014 Los Alamos National Security, LLC.
+ * Copyright (c) 2010-2013 Los Alamos National Security, LLC.
  *                         All rights reserved.
  *
  * $COPYRIGHT$
@@ -419,7 +418,8 @@ segment_attach(opal_shmem_ds_t *ds_buf)
     pid_t my_pid = getpid();
 
     if (my_pid != ds_buf->seg_cpid) {
-        if (-1 == (ds_buf->seg_id = open(ds_buf->seg_name, O_RDWR))) {
+        if (-1 == (ds_buf->seg_id = open(ds_buf->seg_name, O_CREAT | O_RDWR,
+                                         0600))) {
             int err = errno;
             char hn[MAXHOSTNAMELEN];
             gethostname(hn, MAXHOSTNAMELEN - 1);

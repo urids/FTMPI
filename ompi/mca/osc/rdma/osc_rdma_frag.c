@@ -54,6 +54,7 @@ static int frag_send_cb (ompi_request_t *request)
     return OMPI_SUCCESS;
 }
 
+
 static int
 frag_send(ompi_osc_rdma_module_t *module,
             ompi_osc_rdma_frag_t *frag)

@@ -1,7 +1,6 @@
 /*
  *  Copyright (c) 2013      Mellanox Technologies, Inc.
  *                          All rights reserved.
- * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -86,7 +85,7 @@ void oshmem_info_show_oshmem_version(const char *scope)
                 OSHMEM_MAJOR_VERSION, OSHMEM_MINOR_VERSION,
                 OSHMEM_RELEASE_VERSION,
                 OSHMEM_GREEK_VERSION,
-                OSHMEM_REPO_REV);
+                OSHMEM_WANT_REPO_REV, OSHMEM_REPO_REV);
         opal_info_out("Open SHMEM", tmp, tmp2);
         free(tmp);
         free(tmp2);

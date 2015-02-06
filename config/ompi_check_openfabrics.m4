@@ -10,15 +10,12 @@
 #                         University of Stuttgart.  All rights reserved.
 # Copyright (c) 2004-2005 The Regents of the University of California.
 #                         All rights reserved.
-# Copyright (c) 2006-2015 Cisco Systems, Inc.  All rights reserved.
+# Copyright (c) 2006-2014 Cisco Systems, Inc.  All rights reserved.
 # Copyright (c) 2006-2011 Los Alamos National Security, LLC.  All rights
 #                         reserved.
 # Copyright (c) 2006-2009 Mellanox Technologies. All rights reserved.
 # Copyright (c) 2010-2012 Oracle and/or its affiliates.  All rights reserved.
 # Copyright (c) 2009-2012 Oak Ridge National Laboratory.  All rights reserved.
-# Copyright (c) 2014      Bull SAS.  All rights reserved.
-# Copyright (c) 2014-2015 Research Organization for Information Science
-#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -151,7 +148,6 @@ AC_DEFUN([OMPI_CHECK_OPENFABRICS],[
     # Set these up so that we can do an AC_DEFINE below
     # (unconditionally)
     $1_have_xrc=0
-    $1_have_xrc_domains=0
     $1_have_opensm_devel=0
 
     # If we have the openib stuff available, find out what we've got
@@ -165,20 +161,9 @@ AC_DEFUN([OMPI_CHECK_OPENFABRICS],[
                             [#include <infiniband/verbs.h>])
 
            # ibv_create_xrc_rcv_qp was added in OFED 1.3
-           # ibv_cmd_open_xrcd (aka XRC Domains) was added in  OFED 3.12
            if test "$enable_connectx_xrc" = "yes"; then
-               $1_have_xrc=1
-               AC_CHECK_FUNCS([ibv_create_xrc_rcv_qp ibv_cmd_open_xrcd],
-                              [], [$1_have_xrc=0])
-               AC_CHECK_DECLS([IBV_SRQT_XRC],
-                              [], [$1_have_xrc=0])
-                              [#include <infiniband/verbs.h>])
+               AC_CHECK_FUNCS([ibv_create_xrc_rcv_qp], [$1_have_xrc=1])
            fi
-           if test "$enable_connectx_xrc" = "yes" \
-               && test $$1_have_xrc -eq 1; then
-               AC_CHECK_FUNCS([ibv_cmd_open_xrcd], [$1_have_xrc_domains=1])
-           fi
-
 
            if test "no" != "$enable_openib_dynamic_sl"; then
                # We need ib_types.h file, which is installed with opensm-devel
@@ -238,15 +223,6 @@ AC_DEFUN([OMPI_CHECK_OPENFABRICS],[
     AC_DEFINE_UNQUOTED([OMPI_HAVE_CONNECTX_XRC], [$$1_have_xrc],
         [Enable features required for ConnectX XRC support])
     if test "1" = "$$1_have_xrc"; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_RESULT([no])
-    fi
-
-    AC_MSG_CHECKING([if ConnectIB XRC support is enabled])
-    AC_DEFINE_UNQUOTED([OMPI_HAVE_CONNECTX_XRC_DOMAINS], [$$1_have_xrc_domains],
-        [Enable features required for XRC domains support])
-    if test "1" = "$$1_have_xrc_domains"; then
         AC_MSG_RESULT([yes])
     else
         AC_MSG_RESULT([no])

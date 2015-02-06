@@ -124,10 +124,7 @@ static int opal_hwloc_base_register(mca_base_register_flag_t flags)
 
     opal_hwloc_base_binding_policy = NULL;
     (void) mca_base_var_register("opal", "hwloc", "base", "binding_policy",
-                                 "Policy for binding processes. Allowed values: none, hwthread, core, l1cache, l2cache, "
-                                 "l3cache, socket, numa, board (\"none\" is the default when oversubscribed, \"core\" is "
-                                 "the default when np<=2, and \"socket\" is the default when np>2). Allowed qualifiers: "
-                                 "overload-allowed, if-supported",
+                                 "Policy for binding processes [none | hwthread | core (default) | l1cache | l2cache | l3cache | socket | numa | board] (supported qualifiers: overload-allowed,if-supported)",
                                  MCA_BASE_VAR_TYPE_STRING, NULL, 0, 0, OPAL_INFO_LVL_9,
                                  MCA_BASE_VAR_SCOPE_READONLY, &opal_hwloc_base_binding_policy);
 
@@ -513,14 +510,8 @@ int opal_hwloc_base_set_binding_policy(opal_binding_policy_t *policy, char *spec
 
     /* binding specification */
     if (NULL == spec) {
-        if (opal_hwloc_use_hwthreads_as_cpus) {
-            /* default to bind-to hwthread */
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_HWTHREAD);
-        } else {
-            /* default to bind-to core */
-            OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_CORE);
-        }
-        /* note that no binding policy was specified */
+        /* default to bind-to core, and that no binding policy was specified */
+        OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_CORE);
         tmp &= ~OPAL_BIND_GIVEN;
     } else if (0 == strncasecmp(spec, "none", strlen("none"))) {
         OPAL_SET_BINDING_POLICY(tmp, OPAL_BIND_TO_NONE);

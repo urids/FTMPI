@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2012-2013 Los Alamos National Security, LLC.
  *                         All rights reserved.
-* Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
 * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -90,8 +89,8 @@ OPAL_DECLSPEC void opal_info_show_component_version(opal_pointer_array_t *mca_ty
 
 OPAL_DECLSPEC char *opal_info_make_version_str(const char *scope,
                                                int major, int minor, int release,
-                                               const char *greek,
-                                               const char *repo);
+                                               const char *greek, 
+                                               bool want_repo, const char *repo);
 
 OPAL_DECLSPEC void opal_info_show_opal_version(const char *scope);
 

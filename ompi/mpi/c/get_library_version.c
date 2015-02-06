@@ -9,7 +9,6 @@
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2014 Cisco Systems, Inc.  All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -105,7 +104,8 @@ int MPI_Get_library_version(char *version, int *resultlen)
     }
 
     /* Repository revision */
-    if (NULL != OMPI_REPO_REV && strlen(OMPI_REPO_REV) > 0) {
+    if (OMPI_WANT_REPO_REV &&
+        NULL != OMPI_REPO_REV && strlen(OMPI_REPO_REV) > 0) {
         snprintf(ptr, len_left, ", repo rev: %s", OMPI_REPO_REV);
         ptr = tmp + strlen(tmp);
         len_left = MPI_MAX_LIBRARY_VERSION_STRING - strlen(tmp);

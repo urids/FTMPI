@@ -340,7 +340,6 @@ static inline int my_MPI_Test(ompi_request_t ** rptr,
     ompi_request_t *request = *rptr;
 
     assert(request->req_persistent);
-    assert(request->req_state != OMPI_REQUEST_INACTIVE);
 
     if (request->req_complete) {
         int old_error;
@@ -372,7 +371,7 @@ static int oshmem_mkey_recv_cb(void)
     n = 0;
     r = (oob_comm_request_t *)opal_list_get_first(&memheap_oob.req_list);
     assert(r);
-    while(r != opal_list_get_end(&memheap_oob.req_list)) {
+    while (1) {
         my_MPI_Test(&r->recv_req, &flag, &status);
         if (OPAL_LIKELY(0 == flag)) {
             return n;
@@ -401,15 +400,6 @@ static int oshmem_mkey_recv_cb(void)
         }
         opal_dss.load(msg, (void*)tmp_buf, size);
 
-        /*
-         * send reply before posting the receive request again to limit the recursion size to
-         * number of receive requests.
-         * send can call opal_progress which calls this function again. If recv req is started
-         * stack size will be proportional to number of job ranks.
-         */
-        do_recv(status.MPI_SOURCE, msg);
-        OBJ_RELEASE(msg);
-
         rc = MPI_Start(&r->recv_req);
         if (MPI_SUCCESS != rc) {
             MEMHEAP_ERROR("Failed to post recv request %d", rc);
@@ -418,6 +408,8 @@ static int oshmem_mkey_recv_cb(void)
         }
         opal_list_append(&memheap_oob.req_list, &r->super);
 
+        do_recv(status.MPI_SOURCE, msg);
+        OBJ_RELEASE(msg);
 
         r = (oob_comm_request_t *)opal_list_get_first(&memheap_oob.req_list);
         assert(r);
@@ -763,16 +755,10 @@ uint64_t mca_memheap_base_find_offset(int pe,
                                       void* rva)
 {
     map_segment_t *s;
-    int my_pe = oshmem_my_proc_id();
 
     s = __find_va(va);
 
-    if (my_pe == pe) {
-        return (uintptr_t)va - (uintptr_t)s->seg_base_addr;
-    }
-    else {
-        return ((s && MAP_SEGMENT_IS_VALID(s)) ? ((uintptr_t)rva - (uintptr_t)(s->mkeys_cache[pe][tr_id].va_base)) : 0);
-    }
+    return ((s && MAP_SEGMENT_IS_VALID(s)) ? ((uintptr_t)rva - (uintptr_t)(s->mkeys_cache[pe][tr_id].va_base)) : 0);
 }
 
 int mca_memheap_base_is_symmetric_addr(const void* va)

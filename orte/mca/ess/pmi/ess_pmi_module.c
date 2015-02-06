@@ -506,6 +506,10 @@ static void rte_abort(int status, bool report)
     PMI_Abort(status, "N/A");
 #endif
 
+    /* - Clean out the global structures 
+     * (not really necessary, but good practice) */
+    orte_proc_info_finalize();
+    
     /* Now Exit */
-    _exit(status);
+    exit(status);
 }

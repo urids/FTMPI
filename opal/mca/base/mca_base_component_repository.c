@@ -254,7 +254,8 @@ void mca_base_component_repository_release(const mca_base_component_t *component
 void mca_base_component_repository_finalize(void)
 {
 #if OPAL_WANT_LIBLTDL
-  repository_item_t *ri, *next;
+  opal_list_item_t *item;
+  repository_item_t *ri;
 #endif
 
   if (initialized) {
@@ -274,7 +275,10 @@ void mca_base_component_repository_finalize(void)
        technically an error). */
 
     do {
-      OPAL_LIST_FOREACH_SAFE(ri, next, &repository, repository_item_t) {
+      for (item = opal_list_get_first(&repository);
+           opal_list_get_end(&repository) != item; ) {
+        ri = (repository_item_t *) item;
+        item = opal_list_get_next(item);
         OBJ_RELEASE(ri);
       }
     } while (opal_list_get_size(&repository) > 0);
@@ -373,6 +377,7 @@ static void ri_constructor(opal_object_t *obj)
 static void ri_destructor(opal_object_t *obj)
 {
   repository_item_t *ri = (repository_item_t *) obj;
+  dependency_item_t *di;
   opal_list_item_t *item;
   int group_id;
 
@@ -393,8 +398,11 @@ static void ri_destructor(opal_object_t *obj)
   /* Now go release/close (at a minimum: decrement the refcount) any
      dependencies of this component */
 
-  while (NULL != (item = opal_list_remove_first(&ri->ri_dependencies))) {
-    OBJ_RELEASE(item);
+  for (item = opal_list_remove_first(&ri->ri_dependencies);
+       NULL != item; 
+       item = opal_list_remove_first(&ri->ri_dependencies)) {
+    di = (dependency_item_t *) item;
+    OBJ_RELEASE(di);
   }
   OBJ_DESTRUCT(&ri->ri_dependencies);
   opal_list_remove_item(&repository, (opal_list_item_t *) ri);

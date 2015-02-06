@@ -1,0 +1,18 @@
+#include "testlib.h"
+#include <stdio.h>
+#include "mpi.h"
+
+void htft(){
+
+  int numprocess, myRank, len2;
+    char hostname[MPI_MAX_PROCESSOR_NAME];
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+    MPI_Get_processor_name(hostname, &len2);
+
+
+    printf("Hello from task %d on %s!\n", myRank, hostname);
+
+
+printf ("ok:");
+}

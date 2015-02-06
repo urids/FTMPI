@@ -23,4 +23,3 @@ This issue could also be related to CONFIG_STRICT_DEVMEM
 kernel option which if enabled prevents access to physical
 memory via "mmap". In this case you could try using other
 sshmem components instead.
-#

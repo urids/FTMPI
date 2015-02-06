@@ -11,8 +11,6 @@
  *                         All rights reserved.
  * Copyright (c) 2007-2014 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2009      Oak Ridge National Labs.  All rights reserved.
- * Copyright (c) 2014      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -89,9 +87,6 @@ void ompi_info_do_config(bool want_all)
     char *fortran_have_f08_assumed_rank;
     char *fortran_build_f08_subarrays;
     char *fortran_have_optional_args;
-    char *fortran_have_interface;
-    char *fortran_have_iso_fortran_env;
-    char *fortran_have_storage_size;
     char *fortran_have_bind_c;
     char *fortran_have_iso_c_binding;
     char *fortran_have_bind_c_sub;
@@ -102,9 +97,7 @@ void ompi_info_do_config(bool want_all)
     char *fortran_have_abstract;
     char *fortran_have_asynchronous;
     char *fortran_have_procedure;
-    char *fortran_have_c_funloc;
     char *fortran_08_using_wrappers_for_choice_buffer_functions;
-    char *fortran_build_sizeof;
     char *java;
     char *heterogeneous;
     char *memprofile;
@@ -173,10 +166,6 @@ void ompi_info_do_config(bool want_all)
         "yes" : "no";
     fortran_have_optional_args = OMPI_FORTRAN_HAVE_OPTIONAL_ARGS ?
         "yes" : "no";
-    fortran_have_interface = OMPI_FORTRAN_HAVE_INTERFACE ? "yes" : "no";
-    fortran_have_iso_fortran_env = OMPI_FORTRAN_HAVE_ISO_FORTRAN_ENV ?
-        "yes" : "no";
-    fortran_have_storage_size = OMPI_FORTRAN_HAVE_STORAGE_SIZE ? "yes" : "no";
     fortran_have_bind_c = OMPI_FORTRAN_HAVE_BIND_C ? "yes" : "no";
     fortran_have_iso_c_binding = OMPI_FORTRAN_HAVE_ISO_C_BINDING ?
         "yes" : "no";
@@ -189,11 +178,8 @@ void ompi_info_do_config(bool want_all)
     fortran_have_abstract = OMPI_FORTRAN_HAVE_ABSTRACT ? "yes" : "no";
     fortran_have_asynchronous = OMPI_FORTRAN_HAVE_ASYNCHRONOUS ? "yes" : "no";
     fortran_have_procedure = OMPI_FORTRAN_HAVE_PROCEDURE ? "yes" : "no";
-    fortran_have_c_funloc = OMPI_FORTRAN_HAVE_C_FUNLOC ? "yes" : "no";
     fortran_08_using_wrappers_for_choice_buffer_functions = 
         OMPI_FORTRAN_NEED_WRAPPER_ROUTINES ? "yes" : "no";
-    fortran_build_sizeof = OMPI_FORTRAN_BUILD_SIZEOF ?
-        "yes" : "no";
 
     /* Build a string describing what level of compliance the mpi_f08
        module has */
@@ -207,7 +193,6 @@ void ompi_info_do_config(bool want_all)
             OMPI_FORTRAN_HAVE_ABSTRACT &&
             OMPI_FORTRAN_HAVE_ASYNCHRONOUS &&
             OMPI_FORTRAN_HAVE_PROCEDURE &&
-            OMPI_FORTRAN_HAVE_C_FUNLOC &&
             OMPI_FORTRAN_NEED_WRAPPER_ROUTINES) {
             fortran_usempif08_compliance = strdup("The mpi_f08 module is available, and is fully compliant.  w00t!");
         } else {
@@ -230,9 +215,6 @@ void ompi_info_do_config(bool want_all)
             }
             if (!OMPI_FORTRAN_HAVE_PROCEDURE) {
                 append(f08, sizeof(f08), &first, "PROCEDUREs");
-            }
-            if (!OMPI_FORTRAN_HAVE_C_FUNLOC) {
-                append(f08, sizeof(f08), &first, "C_FUNLOCs");
             }
             if (OMPI_FORTRAN_NEED_WRAPPER_ROUTINES) {
                 append(f08, sizeof(f08), &first, "direct passthru (where possible) to underlying Open MPI's C functionality");
@@ -394,15 +376,6 @@ void ompi_info_do_config(bool want_all)
     opal_info_out("Fort optional args", 
                   "compiler:fortran:optional_arguments",
                   fortran_have_optional_args);
-    opal_info_out("Fort INTERFACE",
-                  "compiler:fortran:interface",
-                  fortran_have_interface);
-    opal_info_out("Fort ISO_FORTRAN_ENV",
-                  "compiler:fortran:iso_fortran_env",
-                  fortran_have_iso_fortran_env);
-    opal_info_out("Fort STORAGE_SIZE",
-                  "compiler:fortran:storage_size",
-                  fortran_have_storage_size);
     opal_info_out("Fort BIND(C) (all)", 
                   "compiler:fortran:bind_c",
                   fortran_have_bind_c);
@@ -433,15 +406,9 @@ void ompi_info_do_config(bool want_all)
     opal_info_out("Fort PROCEDURE", 
                   "compiler:fortran:procedure",
                   fortran_have_procedure);
-    opal_info_out("Fort C_FUNLOC",
-                  "compiler:fortran:c_funloc",
-                  fortran_have_c_funloc);
     opal_info_out("Fort f08 using wrappers", 
                   "compiler:fortran:08_wrappers",
                   fortran_08_using_wrappers_for_choice_buffer_functions);
-    opal_info_out("Fort MPI_SIZEOF",
-                  "compiler:fortran:mpi_sizeof",
-                  fortran_build_sizeof);
     
     if (want_all) {
         

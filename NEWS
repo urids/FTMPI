@@ -4,7 +4,7 @@ Copyright (c) 2004-2010 The Trustees of Indiana University and Indiana
 Copyright (c) 2004-2006 The University of Tennessee and The University
                         of Tennessee Research Foundation.  All rights
                         reserved.
-Copyright (c) 2004-2008 High Performance Computing Center Stuttgart,
+Copyright (c) 2004-2008 High Performance Computing Center Stuttgart, 
                         University of Stuttgart.  All rights reserved.
 Copyright (c) 2004-2006 The Regents of the University of California.
                         All rights reserved.
@@ -52,90 +52,6 @@ included in the vX.Y.Z section and be denoted as:
 
    (** also appeared: A.B.C)  -- indicating that this item was previously
                                  included in release version vA.B.C.
-
-1.8.4
------
-
-- Fix MPI_SIZEOF; now available in mpif.h for modern Fortran compilers
-  (see README for more details).  Also fixed various compiler/linker
-  errors.
-- Fixed inadvertant Fortran ABI break between v1.8.1 and v1.8.2 in the
-  mpi interface module when compiled with gfortran >= v4.9.
-- Fix various MPI_THREAD_MULTIPLE issues in the TCP BTL.
-- mpirun no longer requires the --hetero-nodes switch; it will
-  automatically detect when running in heterogeneous scenarios.
-- Update LSF support, to include revamped affinity functionality.
-- Update embedded hwloc to v1.9.1.
-- Fixed max registerable memory computation in the openib BTL.
-- Updated error message when debuggers are unable to find various
-  symbols/types to be more clear.  Thanks to Dave Love for raising the
-  issue.
-- Added proper support for LSF and PBS/Torque libraries in static builds.
-- Rankfiles now support physical processor IDs.
-- Fixed potential hang in MPI_ABORT.
-- Fixed problems with the PSM MTL and "re-connect" scenarios, such as
-  MPI_INTERCOMM_CREATE.
-- Fix MPI_IREDUCE_SCATTER with a single process.
-- Fix (rare) race condition in stdout/stderr funneling to mpirun where
-  some trailing output could get lost when a process terminated.
-- Removed inadvertent change that set --enable-mpi-thread-multiple "on"
-  by default, thus impacting performance for non-threaded apps.
-- Significantly reduced startup time by optimizing internal hash table
-  implementation.
-- Fixed OS X linking with the Fortran mpi module when used with
-  gfortran >= 4.9.  Thanks to Github user yafshar for raising the
-  issue.
-- Fixed memory leak on Cygwin platforms.  Thanks for Marco Atzeri for
-  reporting the issue.
-- Fixed seg fault in neighborhood collectives when the degree of the
-  topology is higher than the communicator size.  Thanks to Lisandro
-  Dalcin for reporting the issue.
-- Fixed segfault in neighborhood collectives under certain use-cases.
-- Fixed various issues regarding Solaris support.  Thanks to Siegmar
-  Gross for patiently identifying all the issues.
-- Fixed PMI configure tests for certain Slurm installation patterns.
-- Fixed param registration issue in Java bindings.  Thanks to Takahiro
-  Kawashima and Siegmar Gross for identifying the issue.
-- Several man page fixes.
-- Silence several warnings and close some memory leaks (more remain,
-  but it's better than it was).
-- Re-enabled the use of CMA and knem in the shared memory BTL.
-- Updated mpirun manpage to correctly explain new map/rank/binding options.
-- Fixed MPI_IALLGATHER problem with intercommunicators.  Thanks for
-  Takahiro Kawashima for the patch.
-- Numerous updates and performance improvements to OpenSHMEM.
-- Turned off message coalescing in the openib BTL until a proper fix
-  for that capability can be provided (tentatively expected for 1.8.5)
-- Fix a bug in iof output that dates back to the dinosaurs which would
-  output extra bytes if the system was very heavily loaded
-- Fix a bug where specifying mca_component_show_load_errors=0 could
-  cause ompi_info to segfault
-- Updated valgrind suppression file
-
-
-1.8.3
------
-
-- Fixed application abort bug to ensure that MPI_Abort exits appropriately
-  and returns the provided exit status
-- Fixed some alignment (not all) issues identified by Clang
-- Allow CUDA-aware to work with nonblocking collectives. Forces packing to
-  happen when using GPU buffers.
-- Fixed configure test issue with Intel 2015 Fortran compiler
-- Fixed some PGI-related errors
-- Provide better help message when encountering a firewall
-- Fixed MCA parameter quoting to protect multi-word params and params
-  that contain special characters
-- Improved the bind-to help message to clarify the defaults
-- Add new MPI-3.1 tools interface
-- Several performance optimizations and memory leak cleanups
-- Turn off the coll/ml plugin unless specifically requested as it
-  remains in an experimental state
-- Fix LSF support by adding required libraries for the latest LSF
-  releases.  Thanks to Joshua Randal for supplying the initial
-  patches.
-
-
 
 1.8.2
 -----
@@ -272,7 +188,7 @@ included in the vX.Y.Z section and be denoted as:
 - Significantly improved the performance of MPI_DIMS_CREATE for large
   values.  Thanks to Andreas Schäfer for the contribution.
 - Removed ASYNCHRONOUS keyword from the "ignore TKR" mpi_f08 module.
-- Deprecated the following mpirun options:
+- Deprecated the following mpirun options: 
   --bynode, --bycore, --byslot: replaced with --map-by node|core|slot.
   --npernode, --npersocket: replaced with --map-by ppr:N:node and
        --map-by ppr:N:socket, respectively
@@ -316,7 +232,7 @@ included in the vX.Y.Z section and be denoted as:
 - Restore version number output in "ompi_info --all".
 - Various bug fixes for the mpi_f08 Fortran bindings.
 - Fix ROMIO compile error with Lustre 2.4.  Thanks to Adam Moody for
-  reporting the issue.
+  reporting the issue. 
 - Various fixes for 32 bit platforms.
 - Add ability to selectively disable building the mpi or mpi_f08
   module.  See the README file for details.
@@ -426,7 +342,7 @@ included in the vX.Y.Z section and be denoted as:
   executables on systems that support it.  This behavior can be
   disabled via --disable-wrapper-rpath.  See note in README about ABI
   issues when using rpath in MPI applications.
-- Added a new parallel I/O component and multiple new frameworks to
+- Added a new parallel I/O component and multiple new frameworks to 
   support parallel I/O operations.
 - Fixed MPI_STATUS_SIZE Fortran issue when used with 8-byte Fortran
   INTEGERs and 4-byte C ints.  Since this issue affects ABI, it is
@@ -501,9 +417,9 @@ included in the vX.Y.Z section and be denoted as:
 - Added new "mindist" process mapper, allowing placement of processes
   via PCI locality information reported by the BIOS.
 - MPI-2.2: Add support for MPI_Dist_graph functionality.
-- Enable generic, client-side support for PMI2 implementations. Can
-  be leveraged by any resource manager that implements PMI2; e.g. SLURM,
-  versions 2.6 and higher.
+- Enable generic, client-side support for PMI2 implementations. Can 
+  be leveraged by any resource manager that implements PMI2; e.g. SLURM, 
+  versions 2.6 and higher.   
 
 1.7.2
 -----
@@ -571,7 +487,7 @@ included in the vX.Y.Z section and be denoted as:
 1.7
 ---
 
-- Added MPI-3 functionality:
+- Added MPI-3 functionality: 
     - MPI_GET_LIBRARY_VERSION
     - Matched probe
     - MPI_TYPE_CREATE_HINDEXED_BLOCK
@@ -633,7 +549,7 @@ included in the vX.Y.Z section and be denoted as:
 - Added new MCA parameter to provide protection against IO forwarding
   backlog.
 - Dropped support for native Windows due to loss of maintainers. :-(
-- Added a new parallel I/O component and multiple new frameworks to
+- Added a new parallel I/O component and multiple new frameworks to 
   support parallel I/O operations.
 - Fix typo in orte_setup_hadoop.m4. Thanks to Aleksej Saushev for
   reporting it
@@ -988,7 +904,7 @@ included in the vX.Y.Z section and be denoted as:
   Thanks to Dominik Goeddeke for finding this.
   (** also to appear in 1.4.4)
 - Improved LoadLeveler ORTE support.
-- Add new WinVerbs BTL plugin, supporting native OpenFabrics verbs on
+- Add new WinVerbs BTL plugin, supporting native OpenFabrics verbs on 
   Windows (the "wv" BTL).
 - Add new btl_openib_gid_index MCA parameter to allow selecting which
   GID to use on an OpenFabrics device's GID table.
@@ -1137,7 +1053,7 @@ included in the vX.Y.Z section and be denoted as:
 - Fixes for Solaris oversubscription detection.
 - If the PML determines it can't reach a peer process, print a
   slightly more helpful message.  Thanks to Nick Edmonds for the
-  suggestion.
+  suggestion. 
 - Make btl_openib_if_include/exclude function the same way
   btl_tcp_if_include/exclude works (i.e., supplying an _include list
   overrides supplying an _exclude list).
@@ -1204,7 +1120,7 @@ included in the vX.Y.Z section and be denoted as:
   (** also to appear in 1.5.5)
 - Removed an unnecessary memmove() and plugged a couple of small memory leaks
   in the openib OOB connection setup code.
-- Fixed some QLogic bugs. Thanks to Mark Debbage from QLogic for the patches.
+- Fixed some QLogic bugs. Thanks to Mark Debbage from QLogic for the patches. 
 - Fixed problem with MPI_IN_PLACE and other sentinel Fortran constants
   on OS X.
   (** also to appear in 1.5.5)
@@ -1239,7 +1155,7 @@ included in the vX.Y.Z section and be denoted as:
 - Corrected the reported default value of btl_openib_ib_timeout
   in the "IB retries exceeded" error message.  Thanks to Kevin Buckley
   for this correction.
-- Increased rdmacm address resolution timeout from 1s to 30s &
+- Increased rdmacm address resolution timeout from 1s to 30s & 
   updated Chelsio T4 openib BTL defaults.  Thanks to Steve Wise
   for these updates.
   (** also to appear in 1.5.5)
@@ -1414,7 +1330,7 @@ included in the vX.Y.Z section and be denoted as:
   details).
 - Fixed some problems in processor affinity support, including when
   there are "holes" in the processor namespace (e.g., offline
-  processors).
+  processors). 
 - Ensure that Open MPI's "session directory" (usually located in /tmp)
   is cleaned up after process termination.
 - Fixed some problems with the collective "hierarch" implementation
@@ -1442,7 +1358,7 @@ included in the vX.Y.Z section and be denoted as:
 - Various fixes for Catamount support.
 - Minor update to wrapper compilers in how user-specific argv is
   ordered on the final command line.  Thanks to Jed Brown for the
-  suggestions.
+  suggestions. 
 - Removed flex.exe binary from Open MPI tarballs; now generate flex
   code from a newer (Windows-friendly) flex when we make official
   tarballs.
@@ -1504,7 +1420,7 @@ and v1.4.
   change the environment variable that we use for obtaining the job's
   allocation.
 - Revert to an older, safer (but slower) communicator ID allocation
-  algorithm.
+  algorithm. 
 - Fixed minimum distance finding for OpenFabrics devices in the openib
   BTL.
 - Relax the parameter checking MPI_CART_CREATE a bit.
@@ -2140,7 +2056,7 @@ and v1.4.
 - Addition of "udapl" BTL for transport across uDAPL interconnects.
 - Really check that the $CXX given to configure is a C++ compiler
   (not a C compiler that "sorta works" as a C++ compiler).
-- Properly check for local host only addresses properly, looking
+- Properly check for local host only addresses properly, looking 
   for 127.0.0.0/8, rather than just 127.0.0.1.
 
 
@@ -2287,7 +2203,7 @@ and v1.4.
   MPI::Datatype::Create_resized, MPI::Datatype::Get_true_extent.
 - Fix OSX linker issue with Fortran bindings.
 - Fixed MPI_COMM_SPAWN to start spawning new processes in slots that
-  (according to Open MPI) are not already in use.
+  (according to Open MPI) are not already in use.  
 - Added capability to "mpirun a.out" (without specifying -np) that
   will run on all currently-allocated resources (e.g., within a batch
   job such as SLURM, Torque, etc.).
@@ -2442,7 +2358,7 @@ and v1.4.
 - Fixed a problem with handling long mpirun app files.  Thanks to Ravi
   Manumachu for identifying the problem.
 - Fix handling of strings in several of the Fortran 77 bindings.
-- Fix LinuxPPC assembly issues.  Thanks to Julian Seward for reporting
+- Fix LinuxPPC assembly issues.  Thanks to Julian Seward for reporting 
   the problem.
 - Enable pty support for standard I/O forwarding on platforms that
   have ptys but do not have openpty().  Thanks to Pierre Valiron for

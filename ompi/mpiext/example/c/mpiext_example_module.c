@@ -19,7 +19,9 @@
 
 #include "ompi_config.h"
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <dlfcn.h>
 
 #include "ompi/mpi/c/bindings.h"
 #include "ompi/mpiext/mpiext.h"
@@ -34,13 +36,37 @@
  */
 static int example_init(void)
 {
-    printf("example mpiext init\n");
+    printf("example mpiext __init\n");
+
+	void *handle;
+	void (*xtfn)();
+	char *error;
+
+
+	handle = dlopen ("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/example/c/HTFT/libtestlib.so", RTLD_LAZY);
+        if (!handle) {
+            fputs (dlerror(), stderr);
+            exit(1);
+        }
+
+
+	xtfn = dlsym(handle, "htft");
+        if ((error = dlerror()) != NULL)  {
+            fputs(error, stderr);
+            exit(1);
+        }
+
+	(*xtfn)();
+        dlclose(handle);
+
+
+    
     return OMPI_SUCCESS;
 }
 
 static int example_fini(void)
 {
-    printf("example mpiext fini\n");
+    printf("example mpiext _fini\n");
     return OMPI_SUCCESS;
 }
 
@@ -50,6 +76,8 @@ static int example_fini(void)
  * must be a global symbol of the form ompi_mpiext_<ext_name> and be
  * of type ompi_mpiext_component_t.
  */
+
+
 ompi_mpiext_component_t ompi_mpiext_example = {
     example_init,
     example_fini

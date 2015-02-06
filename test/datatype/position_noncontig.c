@@ -4,7 +4,6 @@
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
  * Copyright (c) 2011-2013 Cisco Systems, Inc.  All rights reserved.
- * Copyright (c) 2014      Intel, Inc. All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -15,10 +14,6 @@
 #include "ompi_config.h"
 #include <stdio.h>
 #include <string.h>
-#if OPAL_USE_STDBOOL_H
-#include <stdbool.h>
-#endif
-
 #include "opal/datatype/opal_convertor.h"
 #include "ompi/datatype/ompi_datatype.h"
 #include "opal/util/output.h"
@@ -181,9 +176,9 @@ unpack_segments( ompi_datatype_t* datatype, int count,
 }
 
 #if (OPAL_ENABLE_DEBUG == 1) && (OPAL_C_HAVE_VISIBILITY == 0)
-extern bool opal_unpack_debug;
-extern bool opal_pack_debug;
-extern bool opal_position_debug ;
+extern int opal_unpack_debug;
+extern int opal_pack_debug;
+extern int opal_position_debug ;
 #endif  /* OPAL_ENABLE_DEBUG */
 
 int main( int argc, char* argv[] )
@@ -209,9 +204,9 @@ int main( int argc, char* argv[] )
     ompi_datatype_commit(&datatype);
 
 #if (OPAL_ENABLE_DEBUG == 1) && (OPAL_C_HAVE_VISIBILITY == 0)
-    opal_unpack_debug   = false;
-    opal_pack_debug     = false;
-    opal_position_debug = false;
+    opal_unpack_debug   = 0;
+    opal_pack_debug     = 0;
+    opal_position_debug = 0;
 #endif  /* OPAL_ENABLE_DEBUG */
 
     create_segments( datatype, 1, fragment_size,

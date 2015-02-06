@@ -4,6 +4,7 @@
 
 int main(int argc, char* argv[])
 {
+
     int rank;
     char ompi_bound[OMPI_AFFINITY_STRING_MAX];
     char current_binding[OMPI_AFFINITY_STRING_MAX];

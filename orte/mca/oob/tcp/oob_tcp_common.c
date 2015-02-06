@@ -14,8 +14,6 @@
  * Copyright (c) 2009-2012 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2011      Oak Ridge National Labs.  All rights reserved.
  * Copyright (c) 2014      Intel, Inc. All rights reserved.
- * Copyright (c) 2014      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -59,7 +57,6 @@
 #include "opal/util/argv.h"
 #include "opal/class/opal_hash_table.h"
 #include "opal/class/opal_list.h"
-#include "opal/mca/backtrace/backtrace.h"
 
 #include "orte/mca/errmgr/errmgr.h"
 #include "orte/mca/ess/ess.h"

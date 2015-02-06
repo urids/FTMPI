@@ -1,8 +1,6 @@
 /*
  * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2013-2014 Intel, Inc. All rights reserved.
- * Copyright (c) 2014      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -193,11 +191,10 @@ OPAL_DECLSPEC bool opal_hwloc_base_single_cpu(hwloc_cpuset_t cpuset);
 
 /**
  * Provide a utility to parse a slot list against the local
- * cpus of given type, and produce a cpuset for the described binding
+ * logical cpus, and produce a cpuset for the described binding
  */
 OPAL_DECLSPEC int opal_hwloc_base_slot_list_parse(const char *slot_str,
                                                   hwloc_topology_t topo,
-                                                  opal_hwloc_resource_type_t rtype,
                                                   hwloc_cpuset_t cpumask);
 
 OPAL_DECLSPEC char* opal_hwloc_base_find_coprocessors(hwloc_topology_t topo);
@@ -269,14 +266,8 @@ OPAL_DECLSPEC int opal_hwloc_base_cset2mapstr(char *str, int len,
                                               hwloc_topology_t topo,
                                               hwloc_cpuset_t cpuset);
 
-/* get the hwloc object that corresponds to the given processor id  and type */
-OPAL_DECLSPEC hwloc_obj_t opal_hwloc_base_get_pu(hwloc_topology_t topo,
-                                                 int lid,
-                                                 opal_hwloc_resource_type_t rtype);
-
-/* get the topology "signature" so we can check for differences - caller
- * if responsible for freeing the returned string */
-OPAL_DECLSPEC char* opal_hwloc_base_get_topo_signature(hwloc_topology_t topo);
+/* get the hwloc object that corresponds to the given LOGICAL processor id */
+OPAL_DECLSPEC hwloc_obj_t opal_hwloc_base_get_pu(hwloc_topology_t topo,  int lid);
 
 #endif
 

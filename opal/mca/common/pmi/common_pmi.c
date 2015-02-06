@@ -44,6 +44,13 @@ bool mca_common_pmi_init (void) {
         rank = -1;
         appnum = -1;
 
+        /* deal with a Slurm bug by first checking if we were
+         * even launched by a PMI server before attempting
+         * to use PMI */
+        if (NULL == getenv("PMI_FD")) {
+            mca_common_pmi_init_count--;
+            return false;
+        }
 
         /* if we can't startup PMI, we can't be used */
         if (PMI2_Initialized ()) {
@@ -68,6 +75,14 @@ bool mca_common_pmi_init (void) {
 #else
     {
         PMI_BOOL initialized;
+
+        /* deal with a Slurm bug by first checking if we were
+         * even launched by a PMI server before attempting
+         * to use PMI */
+        if (NULL == getenv("PMI_FD")) {
+            mca_common_pmi_init_count--;
+            return false;
+        }
 
         if (PMI_SUCCESS != PMI_Initialized(&initialized)) {
             mca_common_pmi_init_count--;

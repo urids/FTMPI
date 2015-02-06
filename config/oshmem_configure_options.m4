@@ -34,9 +34,8 @@ if test "$oshmem_arg_given" = "yes"; then
             AC_MSG_WARN([only supports Linux.])
             AC_MSG_ERROR([Cannot continue])
         fi
-    else
-        AC_MSG_RESULT([no])
     fi
+    AC_MSG_RESULT([no])
 else
     if test "$opal_found_linux" = "yes"; then
         enable_oshmem=yes
@@ -97,32 +96,29 @@ fi
 AC_DEFINE_UNQUOTED(OSHMEM_PARAM_CHECK, $shmem_param_check,
     [Whether we want to check OSHMEM parameters always or never])
 
-#
-# check for on_exit
-#
-AC_CHECK_FUNCS([on_exit])
 
 #
 #  OSHMEM profiling support
 #
+AC_MSG_CHECKING([if want pshmem_])
 AC_ARG_ENABLE(oshmem-profile,
     AC_HELP_STRING([--enable-oshmem-profile],
                    [enable OSHMEM profiling (default: enabled)]))
-
-AC_MSG_CHECKING([if want pshmem])
-AS_IF([test "$enable_oshmem_profile" != "no"],
-      [AC_MSG_RESULT([yes])],
-      [AC_MSG_RESULT([no])])
- 
-# Bozo check
-AS_IF([test "$enable_oshmem" = "no" && \
-       test "$enable_oshmem_profile" = "yes"],
-      [AC_MSG_WARN([OpenSHMEM profiling was requested, but OpenSHMEM has been explicitly disabled])
-       AC_MSG_ERROR([Cannot continue])])
-
-# Cannot check if we can enable profiling because it is not yet
-# known whether the compiler supports weak symbols.
-
+if test "$enable_oshmem" != "no" -a "$enable_oshmem_profile" != "no"; then
+    _OMPI_C_WEAK_SYMBOLS([
+        AC_MSG_RESULT([yes])
+        oshmem_profiling_support=1
+        ], [
+        AC_MSG_RESULT([no])
+        AC_MSG_WARN([Weak symbols not supported by compiler.
+                     Profiling will be disabled.])
+        oshmem_profiling_support=0]
+    )
+else
+    AC_MSG_RESULT([no])
+    oshmem_profiling_support=0
+fi
+AM_CONDITIONAL(OSHMEM_PROFILING, test $oshmem_profiling_support -eq 1)
 
 #
 # Fortran bindings
@@ -150,8 +146,7 @@ else
 fi
 
 #
-# We can't set am_conditional here since it's yet unknown if there is
-# valid Fortran compiler avaliable
+# We can't set am_conditional here since it's yet unknown if there is valid Fortran compiler avaliable
 #
 
 ]) dnl

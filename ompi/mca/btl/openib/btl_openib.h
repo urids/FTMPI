@@ -17,9 +17,6 @@
  * Copyright (c) 2006-2007 Voltaire All rights reserved.
  * Copyright (c) 2009-2010 Oracle and/or its affiliates.  All rights reserved.
  * Copyright (c) 2013-2014 NVIDIA Corporation.  All rights reserved.
- * Copyright (c) 2014      Bull SAS.  All rights reserved.
- * Copyright (c) 2015      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -305,7 +302,6 @@ struct mca_btl_openib_component_t {
     int gid_index;
     /** Whether we want a dynamically resizing srq, enabled by default */
     bool enable_srq_resize;
-    bool allow_max_memory_registration;
     int memory_registration_verbose_level;
     int memory_registration_verbose;
     int ignore_locality;
@@ -403,11 +399,7 @@ typedef struct mca_btl_openib_device_t {
     volatile bool got_port_event;
 #endif
 #if HAVE_XRC
-#if OMPI_HAVE_CONNECTX_XRC_DOMAINS
-    struct ibv_xrcd *xrcd;
-#else
     struct ibv_xrc_domain *xrc_domain;
-#endif
     int xrc_fd;
 #endif
     int32_t non_eager_rdma_endpoints;

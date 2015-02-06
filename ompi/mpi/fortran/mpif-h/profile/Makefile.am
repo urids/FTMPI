@@ -15,8 +15,6 @@
 # Copyright (c) 2011-2013 Universite Bordeaux 1
 # Copyright (c) 2013-2014 Los Alamos National Security, LLC. All rights
 #                         reserved.
-# Copyright (c) 2015      Research Organization for Information Science
-#                         and Technology (RIST). All rights reserved.
 # $COPYRIGHT$
 # 
 # Additional copyrights may follow
@@ -49,7 +47,7 @@ endif
 headers = \
     defines.h
 
-linked_files = \
+nodist_libmpi_mpifh_pmpi_la_SOURCES = \
         pabort_f.c \
         padd_error_class_f.c \
         padd_error_code_f.c \
@@ -316,7 +314,6 @@ linked_files = \
         prput_f.c \
         pcompare_and_swap_f.c \
         pfetch_and_op_f.c \
-        pwin_allocate_f.c \
         pwin_allocate_shared_f.c \
         pwin_call_errhandler_f.c \
         pwin_complete_f.c \
@@ -351,7 +348,7 @@ linked_files = \
 
 
 if OMPI_PROVIDE_MPI_FILE_INTERFACE
-linked_files += \
+nodist_libmpi_mpifh_pmpi_la_SOURCES += \
         pfile_call_errhandler_f.c \
         pfile_close_f.c \
         pfile_create_errhandler_f.c \
@@ -413,31 +410,11 @@ endif
 #
 # Sym link in the sources from the real MPI directory
 #
-$(linked_files):
+$(nodist_libmpi_mpifh_pmpi_la_SOURCES):
 	$(OMPI_V_LN_S) if test ! -r $@ ; then \
 	    pname=`echo $@ | cut -b '2-'` ; \
 	    $(LN_S) $(top_srcdir)/ompi/mpi/fortran/mpif-h/$$pname $@ ; \
 	fi
-
-# psizeof_f.f90 is generated based on some results from configure tests.
-CLEANFILES += psizeof_f.f90
-sizeof_pl=$(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.pl
-psizeof_f.f90: $(top_builddir)/config.status
-psizeof_f.f90: $(sizeof_pl)
-psizeof_f.f90:
-	$(OMPI_V_GEN) $(sizeof_pl) \
-	    --impl=$@ --ierror=mandatory --pmpi \
-	    --maxrank=$(OMPI_FORTRAN_MAX_ARRAY_RANK) \
-	    --generate=$(OMPI_FORTRAN_BUILD_SIZEOF) \
-	    --real16=$(OMPI_HAVE_FORTRAN_REAL16) \
-	    --complex32=$(OMPI_HAVE_FORTRAN_COMPLEX32)
-
-#
-# The library itself
-#
-nodist_libmpi_mpifh_pmpi_la_SOURCES = \
-        psizeof_f.f90 \
-        $(linked_files)
 
 # Conditionally install the header files
 

@@ -240,33 +240,32 @@ static int usnic_modex_send(void)
     size_t size;
     ompi_btl_usnic_addr_t* addrs = NULL;
 
-    if (0 == mca_btl_usnic_component.num_modules) {
-        return OMPI_SUCCESS;
-    }
-
     size = mca_btl_usnic_component.num_modules * 
         sizeof(ompi_btl_usnic_addr_t);
-    addrs = (ompi_btl_usnic_addr_t*) malloc(size);
-    if (NULL == addrs) {
-        return OMPI_ERR_OUT_OF_RESOURCE;
+    if (size != 0) {
+        addrs = (ompi_btl_usnic_addr_t*) malloc(size);
+        if (NULL == addrs) {
+            return OMPI_ERR_OUT_OF_RESOURCE;
+        }
+
+        for (i = 0; i < mca_btl_usnic_component.num_modules; i++) {
+            ompi_btl_usnic_module_t* module = 
+                mca_btl_usnic_component.usnic_active_modules[i];
+            addrs[i] = module->local_addr;
+            opal_output_verbose(5, USNIC_OUT,
+                                "btl:usnic: modex_send DQP:%d, CQP:%d, subnet = 0x%016" PRIx64 " interface =0x%016" PRIx64,
+                                addrs[i].qp_num[USNIC_DATA_CHANNEL], 
+                                addrs[i].qp_num[USNIC_PRIORITY_CHANNEL], 
+                                ntoh64(addrs[i].gid.global.subnet_prefix),
+                                ntoh64(addrs[i].gid.global.interface_id));
+        }
     }
 
-    for (i = 0; i < mca_btl_usnic_component.num_modules; i++) {
-        ompi_btl_usnic_module_t* module =
-            mca_btl_usnic_component.usnic_active_modules[i];
-        addrs[i] = module->local_addr;
-        opal_output_verbose(5, USNIC_OUT,
-                            "btl:usnic: modex_send DQP:%d, CQP:%d, subnet = 0x%016" PRIx64 " interface =0x%016" PRIx64,
-                            addrs[i].qp_num[USNIC_DATA_CHANNEL],
-                            addrs[i].qp_num[USNIC_PRIORITY_CHANNEL],
-                            ntoh64(addrs[i].gid.global.subnet_prefix),
-                            ntoh64(addrs[i].gid.global.interface_id));
-    }
-
-    rc = ompi_modex_send(&mca_btl_usnic_component.super.btl_version,
+    rc = ompi_modex_send(&mca_btl_usnic_component.super.btl_version, 
                          addrs, size);
-    free(addrs);
-
+    if (NULL != addrs) {
+        free(addrs);
+    }
     return rc;
 }
 
@@ -1000,22 +999,10 @@ static int usnic_handle_completion(
             if (cwc->byte_len <
                  (OMPI_BTL_USNIC_PROTO_HDR_SZ +
                   sizeof(ompi_btl_usnic_btl_header_t))) {
-                uint32_t m = mca_btl_usnic_component.max_short_packets;
-                ++module->num_short_packets;
-                if (OPAL_UNLIKELY(0 != m &&
-                                  module->num_short_packets >= m)) {
-                    opal_show_help("help-mpi-btl-usnic.txt",
-                                   "received too many short packets",
-                                   true,
-                                   ompi_process_info.nodename,
-                                   ibv_get_device_name(module->device),
-                                   module->if_name,
-                                   module->num_short_packets);
-
-                    /* Reset so that we only show this warning once
-                       per MPI process */
-                    mca_btl_usnic_component.max_short_packets = 0;
-                }
+                BTL_ERROR(("%s: RX error polling CQ[%d] with status %d for wr_id %" PRIx64 " vend_err %d, byte_len %d",
+                   ibv_get_device_name(module->device),
+                   channel->chan_index, cwc->status, cwc->wr_id,
+                   cwc->vendor_err, cwc->byte_len));
             } else {
                 /* silently count CRC errors */
                 ++module->stats.num_crc_errors;
@@ -1024,17 +1011,10 @@ static int usnic_handle_completion(
             channel->repost_recv_head = &rseg->rs_recv_desc;
             return 0;
         } else {
-            opal_show_help("help-mpi-btl-usnic.txt",
-                           "non-receive completion error",
-                           true,
-                           ompi_process_info.nodename,
-                           ibv_get_device_name(module->device),
-                           module->if_name,
-                           channel->chan_index,
-                           cwc->status,
-                           (void*) cwc->wr_id,
-                           cwc->opcode,
-                           cwc->vendor_err);
+            BTL_ERROR(("%s: error polling CQ[%d] with status %d for wr_id %" PRIx64 " opcode %d, vend_err %d",
+                   ibv_get_device_name(module->device), channel->chan_index,
+                   cwc->status, cwc->wr_id, cwc->opcode,
+                   cwc->vendor_err));
 
             /* mark error on this channel */
             channel->chan_error = true;

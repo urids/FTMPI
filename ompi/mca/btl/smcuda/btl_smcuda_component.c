@@ -182,7 +182,7 @@ static int smcuda_register(void)
 #endif /* OPAL_CUDA_SUPPORT */
     mca_btl_smcuda.super.btl_eager_limit = 4*1024;
     mca_btl_smcuda.super.btl_rndv_eager_limit = 4*1024;
-    mca_btl_smcuda.super.btl_max_send_size = 128*1024;
+    mca_btl_smcuda.super.btl_max_send_size = 32*1024;
     mca_btl_smcuda.super.btl_rdma_pipeline_send_length = 64*1024;
     mca_btl_smcuda.super.btl_rdma_pipeline_frag_size = 64*1024;
     mca_btl_smcuda.super.btl_min_rdma_pipeline_size = 64*1024;
@@ -295,10 +295,6 @@ static int mca_btl_smcuda_component_close(void)
 #endif
 
 CLEANUP:
-
-#if OPAL_CUDA_SUPPORT
-    mca_common_cuda_fini();
-#endif /* OPAL_CUDA_SUPPORT */
 
     /* return */
     return return_value;
@@ -852,10 +848,6 @@ mca_btl_smcuda_component_init(int *num_btls,
     /* lookup/create shared memory pool only when used */
     mca_btl_smcuda_component.sm_mpool = NULL;
     mca_btl_smcuda_component.sm_mpool_base = NULL;
-
-#if OPAL_CUDA_SUPPORT
-    mca_common_cuda_stage_one_init();
-#endif /* OPAL_CUDA_SUPPORT */
 
     /* if no session directory was created, then we cannot be used */
     if (NULL == ompi_process_info.job_session_dir) {

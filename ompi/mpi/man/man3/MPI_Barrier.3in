@@ -1,11 +1,9 @@
-.\" -*- nroff -*-
-.\" Copyright 2014 Cisco Systems, Inc.  All rights reserved.
+.\" Copyright 2010 Cisco Systems, Inc.  All rights reserved.
 .\" Copyright 2006-2008 Sun Microsystems, Inc.
 .\" Copyright (c) 1996 Thinking Machines Corporation
-.\" $COPYRIGHT$
 .TH MPI_Barrier 3 "#OMPI_DATE#" "#PACKAGE_VERSION#" "#PACKAGE_NAME#"
 .SH NAME
-\fBMPI_Barrier, MPI_Ibcarrier\fP \- Synchronization between MPI processes in a group
+\fBMPI_Barrier\fP \- Blocks until all processes have reached this routine.
 
 .SH SYNTAX
 .ft R
@@ -14,8 +12,6 @@
 #include <mpi.h>
 int MPI_Barrier(MPI_Comm \fIcomm\fP)
 
-int MPI_Ibarrier(MPI_Comm \fIcomm\fP)
-
 .fi
 .SH Fortran Syntax
 .nf
@@ -23,14 +19,17 @@ INCLUDE 'mpif.h'
 MPI_BARRIER(\fICOMM\fP,\fI IERROR\fP)
 	INTEGER	\fICOMM\fP,\fI IERROR\fP
 
-MPI_IBARRIER(\fICOMM\fP,\fI IERROR\fP)
-	INTEGER	\fICOMM\fP,\fI IERROR\fP
-
 .fi
 .SH C++ Syntax
 .nf
 import mpi.*;
 void MPI.COMM_WORLD.Barrier()
+
+.fi
+.SH Java Syntax
+.nf
+#include <mpi.h>
+void MPI::Comm::Barrier() const = 0
 
 .fi
 .SH INPUT PARAMETER
@@ -42,16 +41,12 @@ Communicator (handle).
 .SH OUTPUT PARAMETER
 .ft R
 .TP 1i
-request
-Request (handle, non-blocking only).
-.TP 1i
 IERROR
 Fortran only: Error status (integer). 
 
 .SH DESCRIPTION
 .ft R
-An MPI barrier completes after all group members have entered the
-barrier.
+Blocks the caller until all group members have called it; the call returns at any process only after all group members have entered the call.
 
 .SH WHEN COMMUNICATOR IS AN INTER-COMMUNICATOR
 .sp
