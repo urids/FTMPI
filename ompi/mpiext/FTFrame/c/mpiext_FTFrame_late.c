@@ -1,13 +1,15 @@
 
 #include "ompi_config.h"
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <dlfcn.h>
 
 #include "ompi/mpi/c/bindings.h"
 #include "ompi/mpiext/mpiext.h"
 #include "ompi/mpiext/FTFrame/c/mpiext_FTFrame_c.h"
 
-static const char FUNC_NAME[] = "OMPI_Progress";
+//static const char FUNC_NAME[] = "OMPI_Progress";
 
 /*
  * Global variable from this extension
@@ -21,7 +23,7 @@ int OMPI_FTFrame_global = 42;
 
 
 
-int OMPI_Progress(int count, MPI_Comm comm) 
+int OMPI_initXplore(int count, MPI_Comm comm)
 {
     char name[MPI_MAX_OBJECT_NAME];
     int len;
@@ -43,8 +45,50 @@ int OMPI_Progress(int count, MPI_Comm comm)
     MPI_Get_processor_name(hostname, &len2);
 
     printf("Hello from task %d on %s!\n", myRank, hostname);  
+    printf("Count = %d, LB_name is: = %s\n", count, name);
 
-    printf("Count = %d, commName is: = %s\n", count, name);
+
+    	void *dlhandle;
+    	void (*recvfcn)(MPI_Comm mcomm);
+    	void (*sendfcn)(MPI_Comm mcomm);
+    	char *error;
+
+
+    		dlhandle = dlopen ("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/comms/libhiddenComms.so", RTLD_LAZY);
+            if (!dlhandle) {
+                fputs (dlerror(), stderr);
+                exit(1);
+            }
+
+
+            if(myRank==0){
+            recvfcn = dlsym(dlhandle, "rcvXploreInfo");
+
+            	if ((error = dlerror()) != NULL)  {
+            		fputs(error, stderr);
+            		exit(1);
+            	}
+
+
+            	(*recvfcn)(comm);
+
+            }
+            else {
+            	sendfcn = dlsym(dlhandle, "sendXploreInfo");
+
+            	if ((error = dlerror()) != NULL ) {
+            		fputs(error, stderr);
+            		exit(1);
+            	}
+
+            	(*sendfcn)(comm);
+
+            }
+
+
+            dlclose(dlhandle);
+
+
 
     return MPI_SUCCESS;
 }

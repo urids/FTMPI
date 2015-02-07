@@ -10,38 +10,34 @@
 #include "ompi/mpiext/FTFrame/c/mpiext_FTFrame_c.h"
 
 /* 
- * The init/fini functions and the component struct are not required,
- * but optional.  If an extension would like to have init/fini, in
+ * If an extension would like to have init/fini, in
  * addition to providing the hooks below, adding the line in
- * configure.m4 (documented in example's configure.m4) is also
- * required.
+ * configure.m4  is also required.
  */
 static int FTFrame_init(void)
 {
     printf("FTFrame mpiext __init\n");
 
-	void *handle;
+	void *dlhandle;
 	void (*xtfn)();
 	char *error;
 
 
-	handle = dlopen ("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/dvXplore/libdvXplore.so", RTLD_LAZY);
-        if (!handle) {
+	dlhandle = dlopen ("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/dvXplore/libdvXplore.so", RTLD_LAZY);
+        if (!dlhandle) {
             fputs (dlerror(), stderr);
             exit(1);
         }
 
 
-	xtfn = dlsym(handle, "htft");
+	xtfn = dlsym(dlhandle, "htft");
         if ((error = dlerror()) != NULL)  {
             fputs(error, stderr);
             exit(1);
         }
 
 	(*xtfn)();
-        dlclose(handle);
-
-
+        dlclose(dlhandle);
     
     return OMPI_SUCCESS;
 }
