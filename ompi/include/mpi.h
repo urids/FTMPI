@@ -427,6 +427,16 @@ typedef int (MPI_Grequest_cancel_function)(void *, int);
 #define MPI_GRAPH              2                       /* graph topology */
 #define MPI_KEYVAL_INVALID     -1                      /* invalid key value */
 
+/*my miscelaneous constatns*/
+
+#define ALL_DEVICES 0
+#define GPU_DEVICES 1
+#define CPU_DEVICES 2
+#define ACC_DEVICES 3
+
+
+
+
 /*
  * More constants
  */

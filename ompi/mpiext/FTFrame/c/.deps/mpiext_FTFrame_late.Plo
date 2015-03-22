@@ -129,7 +129,23 @@ mpiext_FTFrame_late.lo: mpiext_FTFrame_late.c \
  /home/uriel/Dev/mpisrc/FTMPI/opal/mca/event/libevent2021/libevent/include/event2/tag.h \
  /home/uriel/Dev/mpisrc/FTMPI/opal/mca/event/libevent2021/libevent/include/event2/tag_compat.h \
  ../../../../opal/mca/event/libevent2021/libevent/include/event2/thread.h \
- ../../../../ompi/mpiext/mpiext.h \
+ ../../../../ompi/mpiext/mpiext.h hiddenComms.h \
+ /opt/intel/opencl-1.2-3.2.1.16712/include/CL/cl.h \
+ /opt/intel/opencl-1.2-3.2.1.16712/include/CL/cl_platform.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.7/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.7/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.7/include/mm_malloc.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.7/include/emmintrin.h \
+ /home/uriel/Dev/mpisrc/FTMPI/ompi/include/mpi.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/Device.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/deviceExploration.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/devicesInitialization.h \
+ mpiext_FTFrame_c.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/taskMgmt/task.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/taskMgmt/../deviceMgmt/Device.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/taskMgmt/taskProcedures.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/localDevices.h \
+ /home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/Device.h \
  ../../../../ompi/mpiext/FTFrame/c/mpiext_FTFrame_c.h
 
 ../../../../ompi/include/ompi_config.h:
@@ -459,5 +475,39 @@ mpiext_FTFrame_late.lo: mpiext_FTFrame_late.c \
 ../../../../opal/mca/event/libevent2021/libevent/include/event2/thread.h:
 
 ../../../../ompi/mpiext/mpiext.h:
+
+hiddenComms.h:
+
+/opt/intel/opencl-1.2-3.2.1.16712/include/CL/cl.h:
+
+/opt/intel/opencl-1.2-3.2.1.16712/include/CL/cl_platform.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.7/include/xmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.7/include/mmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.7/include/mm_malloc.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.7/include/emmintrin.h:
+
+/home/uriel/Dev/mpisrc/FTMPI/ompi/include/mpi.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/Device.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/deviceExploration.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/devicesInitialization.h:
+
+mpiext_FTFrame_c.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/taskMgmt/task.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/taskMgmt/../deviceMgmt/Device.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/taskMgmt/taskProcedures.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/localDevices.h:
+
+/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src/deviceMgmt/Device.h:
 
 ../../../../ompi/mpiext/FTFrame/c/mpiext_FTFrame_c.h:

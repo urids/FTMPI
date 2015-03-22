@@ -4,92 +4,128 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
-
+#include <stdarg.h>
 #include "ompi/mpi/c/bindings.h"
 #include "ompi/mpiext/mpiext.h"
+#include "hiddenComms.h"
 #include "ompi/mpiext/FTFrame/c/mpiext_FTFrame_c.h"
 
-//static const char FUNC_NAME[] = "OMPI_Progress";
 
-/*
- * Global variable from this extension
- */
-int OMPI_FTFrame_global = 42;
+XCLtask* taskList; // Global Variable declared in task.h
+int numTasks;//Global variable declared in tskMgmt.h
 
-/*
- * Just to make the extension "interesting", we pass in an integer and
- * an MPI handle.
- */
-
-
-
-int OMPI_initXplore(int count, MPI_Comm comm)
-{
-    char name[MPI_MAX_OBJECT_NAME];
-    int len;
-
-    /* Just as an example, get the name of the communicator and print
-       it out.  Use the PMPI name when possible so that these
-       invocations don't show up in profiling tools. */
-
+int OMPI_collectDevicesInfo(int devSelection, MPI_Comm comm){
+/*	char name[MPI_MAX_OBJECT_NAME];
+	int len;
 #if OMPI_ENABLE_MPI_PROFILING
-    PMPI_Comm_get_name(comm, name, &len);
+	PMPI_Comm_get_name(comm, name, &len);
 #else
-    MPI_Comm_get_name(comm, name, &len);
+	MPI_Comm_get_name(comm, name, &len);
 #endif
+*/
+	int numprocess, myRank, len2;
+	char hostname[MPI_MAX_PROCESSOR_NAME];
 
-    int numprocess, myRank, len2;
-    char hostname[MPI_MAX_PROCESSOR_NAME];
-
-    MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-    MPI_Get_processor_name(hostname, &len2);
-
-    printf("Hello from task %d on %s!\n", myRank, hostname);  
-    printf("Count = %d, LB_name is: = %s\n", count, name);
+	MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
+	MPI_Get_processor_name(hostname, &len2);
 
 
-    	void *dlhandle;
-    	void (*recvfcn)(MPI_Comm mcomm);
-    	void (*sendfcn)(MPI_Comm mcomm);
-    	char *error;
+	void *tskMgmt_dlhandle;
+	int (*createTaskList)(int);
+	char *error;
+	tskMgmt_dlhandle = dlopen ("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/tskMgmt/libtskMgmt.so", RTLD_LAZY);
 
+	if (!tskMgmt_dlhandle ) {
+			fputs(dlerror(), stderr);
+			exit(1);
+		}
 
-    		dlhandle = dlopen ("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/comms/libhiddenComms.so", RTLD_LAZY);
-            if (!dlhandle) {
-                fputs (dlerror(), stderr);
-                exit(1);
-            }
+	createTaskList = dlsym(tskMgmt_dlhandle, "createTaskList");
+		if ((error = dlerror()) != NULL ) {
+			fputs(error, stderr);
+			exit(1);
+		}
 
+	(*createTaskList)(devSelection);
 
-            if(myRank==0){
-            recvfcn = dlsym(dlhandle, "rcvXploreInfo");
+/*//TODO: This section is for delagtin master node for load balancing.
+	if (myRank == 0) {
 
-            	if ((error = dlerror()) != NULL)  {
-            		fputs(error, stderr);
-            		exit(1);
-            	}
+		rcvXploreInfo(comm);
 
+	} else {
 
-            	(*recvfcn)(comm);
+		sendXploreInfo(comm);
 
-            }
-            else {
-            	sendfcn = dlsym(dlhandle, "sendXploreInfo");
-
-            	if ((error = dlerror()) != NULL ) {
-            		fputs(error, stderr);
-            		exit(1);
-            	}
-
-            	(*sendfcn)(comm);
-
-            }
-
-
-            dlclose(dlhandle);
-
-
-
-    return MPI_SUCCESS;
+	}
+*/
+	dlclose(tskMgmt_dlhandle);
+	return MPI_SUCCESS;
 }
+
+
+int OMPI_XclCreateKernel(MPI_Comm comm,char* srcPath, char* kernelName){
+
+int i;
+
+	void *dlhandle;
+	int (*XclCreateKernel)(MPI_Comm comm,char* srcPath,char* kernelName,int numTasks);
+	char *error;
+
+	dlhandle =dlopen("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/tskMgmt/libtskMgmt.so",RTLD_LAZY);
+	if (!dlhandle) {
+		fputs(dlerror(), stderr);
+		exit(1);
+	}
+
+	XclCreateKernel = dlsym(dlhandle, "XclCreateKernel");
+
+	if ((error = dlerror()) != NULL ) {
+		fputs(error, stderr);
+		exit(1);
+	}
+
+	int err;
+	//take care here because clXplr will become the global and unique xploreInfo "object" maybe I should make it const
+
+	//TODO: this is only if devSelection=ALL_DEVICES; otherwise maybe we need a switch.
+	err=(*XclCreateKernel)(comm,srcPath,kernelName,numTasks);
+	//err|=(*XclCreateKernel)(comm,srcPath,kernelName,& clXplr,gpu,&taskSet);
+	//err|=(*XclCreateKernel)(comm,srcPath,kernelName,& clXplr,accel,&taskSet);
+	dlclose(dlhandle);
+
+	return MPI_SUCCESS;
+}
+
+int OMPI_XclExecKernel(MPI_Comm communicator,int globalThreads, int localThreads,const char * fmt, ...){
+	void *dlhandle;
+		int (*XclExecKernel)(MPI_Comm, int, int ,const char * ,  va_list );
+		char *error;
+
+		dlhandle =dlopen("/home/uriel/Dev/mpisrc/FTMPI/ompi/mpiext/FTFrame/c/tskMgmt/libtskMgmt.so",RTLD_LAZY);
+		if (!dlhandle) {
+			fputs(dlerror(), stderr);
+			exit(1);
+		}
+
+		XclExecKernel = dlsym(dlhandle, "XclExecKernel");
+
+		if ((error = dlerror()) != NULL ) {
+			fputs(error, stderr);
+			exit(1);
+		}
+		int err;
+
+		 va_list argptr;
+		  va_start(argptr,fmt);
+		  err=(*XclExecKernel)(communicator,globalThreads,localThreads,fmt,argptr);
+		  va_end(argptr);
+
+
+
+		dlclose(dlhandle);
+
+		return MPI_SUCCESS;
+}
+
 

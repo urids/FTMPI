@@ -16,8 +16,10 @@
 
 # We must set these #defines so that the inner OMPI MPI prototype
 # header files do the Right Thing.
-AM_CPPFLAGS = -DOMPI_PROFILE_LAYER=0 -DOMPI_COMPILING_FORTRAN_WRAPPERS=1
 
+#take Care about the openCL inclusion
+AM_CPPFLAGS = -DOMPI_PROFILE_LAYER=0 -DOMPI_COMPILING_FORTRAN_WRAPPERS=1 -I/opt/intel/opencl-1.2-3.2.1.16712/include -I/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/src
+AM_LDFLAGS=-L/home/uriel/Dev/mpiApps/FTWrkDistr/multiDeviceMgmt/Debug -lmultiDeviceMgmt
 # Convenience libtool library that will be slurped up into libmpi.la.
 noinst_LTLIBRARIES = libmpiext_FTFrame_c.la
 
@@ -26,7 +28,7 @@ noinst_LTLIBRARIES = libmpiext_FTFrame_c.la
 ompidir = $(ompiincludedir)/ompi/mpiext/FTFrame/c
 
 # This is the header file that is installed.
-ompi_HEADERS = mpiext_FTFrame_c.h
+ompi_HEADERS = mpiext_FTFrame_c.h hiddenComms.h XclScatter.h
 
 # Sources for the convenience libtool library.  Other than the one
 # header file, all source files in the extension have no file naming
@@ -34,5 +36,8 @@ ompi_HEADERS = mpiext_FTFrame_c.h
 libmpiext_FTFrame_c_la_SOURCES = \
         $(ompi_HEADERS) \
         mpiext_FTFrame_early.c \
-        mpiext_FTFrame_late.c
+        mpiext_FTFrame_late.c \
+        hiddenComms.c \
+        XclScatter.c
+       
 libmpiext_FTFrame_c_la_LDFLAGS = -module -avoid-version -ldl
